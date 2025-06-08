@@ -1,0 +1,16 @@
+<!-- templates/registration/logout.html -->
+{% extends "base/base.html" %}
+
+{% block content %}
+    <h2>确认登出</h2>
+    <p>您确定要退出登录吗？</p>
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+        {% endif %}
+        <button type="submit" class="btn btn-danger">确认登出</button>
+        <a href="{% url 'home' %}" class="btn btn-secondary">取消</a>
+    </form>
+{% endblock %}

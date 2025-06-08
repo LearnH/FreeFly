@@ -1,0 +1,44 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 机场管理 {% endblock %}
+{% block search_label %} 机场名称 {% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block search2 %}
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">ICAO代码</span>
+        <input type="text" class="form-control" name="searchIcao" value="{{ icao_query }}">
+    </div>
+{% endblock %}
+
+{% block add_url %}{% url 'airport_add' %}{% endblock %}
+{% block edit_url %}/airport/{% endblock %}
+{% block delete_url %}/airport/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">机场名称</th>
+    <th scope="col">ICAO代码</th>
+    <th scope="col">状态</th>
+    <th scope="col">经度</th>
+    <th scope="col">纬度</th>
+    <th scope="col">地址</th>
+    <th scope="col">描述</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for airport in airport_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedAirport" value="{{ airport.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ airport.name }}</td>
+            <td>{{ airport.icao_code|default_if_none:"" }}</td>
+            <td>{{ airport.get_status_display }}</td>
+            <td>{{ airport.longitude|default_if_none:"" }}</td>
+            <td>{{ airport.latitude|default_if_none:"" }}</td>
+            <td>{{ airport.address|default_if_none:"" }}</td>
+            <td>{{ airport.description|default_if_none:"" }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

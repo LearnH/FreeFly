@@ -1,0 +1,45 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 公司管理 {% endblock %}
+{% block search_label %} 公司名称 {% endblock %}
+{% block search1 %}
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">外文名称</span>
+        <input type="text" class="form-control" name="searchNameEn" value="{{ name_en_query }}">
+    </div>
+{% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'company_add' %}{% endblock %}
+{% block edit_url %}/company/{% endblock %}
+{% block delete_url %}/company/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">公司名称</th>
+    <th scope="col">外文名称</th>
+    <th scope="col">公司简称</th>
+    <th scope="col">上级</th>
+    <th scope="col">成立时间</th>
+    <th scope="col">负责人</th>
+    <th scope="col">电话</th>
+    <th scope="col">状态</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for company in company_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedCompany" value="{{ company.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ company.name }}</td>
+            <td>{{ company.name_en|default_if_none:"" }}</td>
+            <td>{{ company.name_short|default_if_none:"" }}</td>
+            <td>{{ company.parent|default_if_none:"" }}</td>
+            <td>{{ company.found_time|default_if_none:"" }}</td>
+            <td>{{ company.legal_person|default_if_none:"" }}</td>
+            <td>{{ company.phone|default_if_none:"" }}</td>
+            <td>{{ company.get_status_display }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

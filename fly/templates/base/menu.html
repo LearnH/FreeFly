@@ -1,0 +1,81 @@
+{% load static %}
+{% load custom_filters %}
+
+<style>
+    /* 自定义悬停效果 */
+    .nav-link:hover {
+        color: #0a53be !important; /* 悬停时颜色 */
+        background-color: #f8f9fa; /* 悬停背景色 */
+    }
+
+    /* 自定义选中效果 */
+    .nav-link.active {
+        background-color: #E6E6FA; /* 深蓝 */
+    }
+</style>
+
+<ul class="nav flex-column">
+    <li class="nav-item">
+        <a href="{% url 'dashboard' %}" class="nav-link text-dark">
+            <i class="fas fa-home"></i>
+            <span class="nav-link-text">控制台</span>
+        </a>
+    </li>
+
+    <!-- 单位组织 - 分级菜单 -->
+    <li class="nav-item">
+        <a class="nav-link text-dark collapsed" data-bs-toggle="collapse" href="#organizationCollapse"
+           aria-expanded="{% if '/company/' in active_menu or '/department/' in active_menu or '/position/' in active_menu %}true{% else %}false{% endif %}"
+           aria-controls="organizationCollapse">
+            <i class="fas fa-sitemap"></i>
+            <span class="nav-link-text">单位组织</span>
+            <i class="fas fa-chevron-down float-end mt-1"></i>
+        </a>
+        <div class="collapse {% if '/company/' in active_menu or '/department/' in active_menu or '/position/' in active_menu %}show{% endif %}" id="organizationCollapse">
+            <ul class="nav flex-column ps-4">
+                <li class="nav-item">
+                    <a href="{% url 'company' %}"
+                       class="nav-link text-dark {% if '/company/' in active_menu %}active{% endif %}">
+                        <i class="fa-solid fa-cubes "></i>
+                        <span class="nav-link-text">公司管理</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'department' %}"
+                       class="nav-link text-dark {% if '/department/' in active_menu %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span class="nav-link-text">部门管理</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'position' %}"
+                       class="nav-link text-dark {% if '/position/' in active_menu %}active{% endif %}">
+                        <i class="fa-solid fa-user-tag "></i>
+                        <span class="nav-link-text">岗位管理</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </li>
+
+    <li class="nav-item">
+        <a href="{% url 'operating_base' %}" class="nav-link text-dark {% if active_menu|startswith:'/operating_base/' %}active{% endif %}">
+            <i class="fa-solid fa-earth-europe "></i>
+            <span class="nav-link-text">基地管理</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'airport' %}" class="nav-link text-dark {% if active_menu|startswith:'/airport/' %}active{% endif %}">
+            <i class="fa-brands fa-fantasy-flight-games "></i>
+            <span class="nav-link-text">机场管理</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="{% url 'employee' %}" class="nav-link text-dark {% if active_menu|startswith:'/employee/' %}active{% endif %}">
+            <i class="fa-solid fa-user-tie "></i>
+            <span class="nav-link-text">员工管理</span>
+        </a>
+    </li>
+    <!-- 更多菜单项... -->
+</ul>

@@ -1,0 +1,47 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 部门管理 {% endblock %}
+{% block search_label %} 名称 {% endblock %}
+{% block search1 %}
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">所属公司</span>
+        <select class="form-select" name="searchCompany">
+            <option value="">全部</option>
+            {% for obj in company_list %}
+                <option value="{{ obj.id }}"
+                        {% if obj.id|stringformat:'s' == company_query|stringformat:'s' %}selected{% endif %}>
+                    {{ obj.name  }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+{% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'department_add' %}{% endblock %}
+{% block edit_url %}/department/{% endblock %}
+{% block delete_url %}/department/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">名称</th>
+    <th scope="col">上级</th>
+    <th scope="col">所属公司</th>
+    <th scope="col">状态</th>
+    <th scope="col">描述</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for department in department_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedDepartment" value="{{ department.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ department.name }}</td>
+            <td>{{ department.parent|default_if_none:"" }}</td>
+            <td>{{ department.company|default_if_none:"" }}</td>
+            <td>{{ department.get_status_display }}</td>
+            <td>{{ department.description|default_if_none:"" }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

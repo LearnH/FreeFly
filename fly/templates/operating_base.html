@@ -1,0 +1,40 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 基地管理 {% endblock %}
+
+{% block search_label %} 基地名称 {% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'operating_base_add' %}{% endblock %}
+{% block edit_url %}/operating_base/{% endblock %}
+{% block delete_url %}/operating_base/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">基地名称</th>
+    <th scope="col">类型</th>
+    <th scope="col">运行机场</th>
+    <th scope="col">状态</th>
+    <th scope="col">地址</th>
+    <th scope="col">负责人</th>
+    <th scope="col">手机号</th>
+    <th scope="col">描述</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for ope_base in ope_base_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedAirport" value="{{ ope_base.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ ope_base.name }}</td>
+            <td>{{ ope_base.get_base_type_display|default_if_none:"" }}</td>
+            <td>{{ ope_base.airport.name|default_if_none:"" }}</td>
+            <td>{{ ope_base.get_status_display }}</td>
+            <td>{{ ope_base.address|default_if_none:"" }}</td>
+            <td>{{ ope_base.in_charge|default_if_none:"" }}</td>
+            <td>{{ ope_base.phone|default_if_none:"" }}</td>
+            <td>{{ ope_base.description|default_if_none:"" }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

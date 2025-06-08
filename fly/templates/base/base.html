@@ -1,0 +1,192 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {% block title %}
+            飞行时间记录系统
+        {% endblock %}
+    </title>
+    <link rel="stylesheet" href="{% static '/plugins/tempus-dominus-6.9.4/css/tempus-dominus.min.css' %}">
+    <link rel="stylesheet" href="{% static '/plugins/bootstrap-5.3.0-alpha2/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static '/plugins/fontawesome-free-6.6.0-web/css/all.min.css' %}">
+    {% block extra_css %}{% endblock %}
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* 禁用全局滚动 */
+        }
+
+        /* 整体布局 */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* === 顶部导航栏 === */
+        .top-navbar {
+            height: 50px;
+            background: #363636;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        /* === 内容区域（侧边栏+主内容）=== */
+        .content-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden; /* 重要：防止双层滚动 */
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 160px;
+            height: calc(100vh - 50px); /* 减去顶部导航栏高度 */
+            background: #F8F8FF;
+            color: black;
+            transition: all 0.3s; /* 动画效果 */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #DCDCDC;
+        }
+
+        /* 侧边栏内容区域（可滚动） */
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        /* 固定在侧边栏底部的按钮 */
+        .sidebar-footer {
+            padding: 5px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0; /* 防止按钮被折叠 */
+            height: 40px; /* 按钮高度 */;
+        }
+
+        /* 折叠后的侧边栏 */
+        .sidebar-collapsed {
+            width: 50px !important; /* 只显示图标 */
+            overflow: hidden;
+        }
+
+        /* 菜单项隐藏文字 */
+        .sidebar-collapsed .nav-link-text {
+            display: none;
+        }
+
+        /* 主内容区域偏移 */
+        .main-content {
+            transition: all 0.3s;
+            flex: 1;
+            overflow-y: auto; /* 主内容区独立滚动 */
+            padding: 20px;
+        }
+
+        /* 头像 */
+        .img-thumbnail {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            padding: 0;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="app-container">
+    <div class="top-navbar">
+        <h5 class="mt-3 mb-3">飞行时间记录系统</h5>
+        <div style="margin-left: auto;" class="dropdown">
+            <button class="btn dropdown-toggle" type="button" id="userinfoDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="{% static '/img/avatars/avatar.png' %}" class="img-thumbnail" alt="Avatar">
+                <span style="color: white">{{ request.user.username }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-dark">
+                <li>
+                    <a class="dropdown-item" href="#">
+                        <i class="fa-regular fa-circle-user me-3"></i>个人资料
+                    </a>
+                </li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{% url 'logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <i class="fa-solid fa-power-off me-3"></i>退出
+                    </a>
+                    <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+    <div class="content-area">
+        <!-- 侧边栏 -->
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-content p-0">
+                {% include 'base/menu.html' %}
+            </div>
+            <div class="sidebar-footer">
+                <button id="toggleSidebar" class="btn btn-link" type="button">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div id="mainContent" class="main-content flex-grow-1 p-2">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+</div>
+<script src="{% static '/js/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static '/plugins/bootstrap-5.3.0-alpha2/js/bootstrap.js' %}"></script>
+<script src="{% static '/plugins/bootstrap-5.3.0-alpha2/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static '/plugins/fontawesome-free-6.6.0-web/js/fontawesome.js' %}"></script>
+<!-- 时间选择 -->
+<script src="{% static '/plugins/popperjs-core-2.11.6/umd/popper.min.js' %}"></script>
+<script src="{% static '/plugins/moment-2.29.4/min/moment.min.js' %}"></script>
+<script src="{% static '/plugins/tempus-dominus-6.9.4/js/tempus-dominus.min.js' %}"></script>
+{#<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>#}
+{#<script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.9.4/dist/js/tempus-dominus.min.js"></script>#}
+{% block extra_js %}{% endblock %}
+<!-- 折叠逻辑 -->
+<script>
+    const toggleBtn = document.getElementById("toggleSidebar");
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.getElementById("mainContent");
+
+    toggleBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("sidebar-collapsed");
+        mainContent.classList.toggle("main-content-collapsed");
+
+        // 切换图标（可选）
+        const icon = toggleBtn.querySelector("i");
+        if (sidebar.classList.contains("sidebar-collapsed")) {
+            icon.classList.replace("fa-bars", "fa-chevron-right");
+        } else {
+            icon.classList.replace("fa-chevron-right", "fa-bars");
+        }
+    });
+</script>
+</body>
+</html>

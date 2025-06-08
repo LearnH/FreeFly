@@ -1,0 +1,176 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+    <style>
+        /* 公共样式 */
+        tbody tr {
+            cursor: pointer;
+        }
+
+        .container-fluid {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 66px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .fixed-col {
+            width: 30px;
+            text-align: center;
+        }
+
+        .footer {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            height: 35px;
+            padding-top: 3px;
+        }
+
+        {% block super %}
+        {% endblock %}
+    </style>
+
+    <div class="container-fluid">
+        <div class="header">
+            <div class="card">
+                <div class="card-body p2">
+                    <form method="get">
+                        <div class="d-flex align-items-center gap-2">
+                            {% block search_input %}
+                                <div class="input-group input-group-sm" style="width: 250px;">
+                                    <span class="input-group-text">{% block search_label %}搜索项{% endblock %}</span>
+                                    <input type="text" class="form-control" name="searchKey" value="{{ key_query }}">
+                                </div>
+                            {% endblock %}
+                            {% block search1 %}{% endblock %}
+                            {% block search_select %}
+                                <div class="input-group input-group-sm" style="width: 250px;">
+                                    <span class="input-group-text">{% block select_label %}选择项{% endblock %}</span>
+                                    <select class="form-select" aria-label="Default select example" name="searchStatus">
+                                        <option value="">全部</option>
+                                        {% for value, display in status_choices %}
+                                            <option value="{{ value }}"
+                                                    {% if value|stringformat:'s' == status_query|stringformat:'s' %}selected{% endif %}>
+                                                {{ display }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            {% endblock %}
+                            {% block search2 %}{% endblock %}
+                            <button type="submit" class="btn btn-outline-primary btn-sm">查询</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-header p-2 d-flex justify-content-between align-items-center px-4">
+                    <span>操作</span>
+                    <div class="btn-group btn-group-sm">
+                        <a type="button" class="btn btn-outline-primary btn-sm"
+                           href="{% block add_url %}#{% endblock %}">
+                            <i class="fa-solid fa-plus"></i> 添加
+                        </a>
+                        <a id="editBtn" type="button" class="btn btn-outline-primary btn-sm" href="#">
+                            <i class="fa-solid fa-pen-to-square"></i> 编辑
+                        </a>
+                        <a id="deleteBtn" type="button" class="btn btn-outline-primary btn-sm" href="#">
+                            <i class="fa-solid fa-trash-can"></i> 删除
+                        </a>
+                    </div>
+
+                    {% block ope_button %}
+
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="table-responsive-xxl">
+                <table class="table table-hover table-sm table-bordered align-middle" style="margin: 10px auto;">
+                    <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="fixed-col">#</th>
+                        <th scope="col" class="fixed-col"></th>
+                        {% block table_headers %}{% endblock %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% block table_body %}{% endblock %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination pagination-sm justify-content-center">
+                    {{ page_string }}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex text-bg-warning fs-6">
+                <div class="toast-body">
+                    请先选择一行数据！
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedId = null;
+
+        function selectRow(row) {
+            // 取消之前选中的行的高亮
+            document.querySelectorAll('tr').forEach(r => {
+                r.classList.remove('table-primary');
+            });
+
+            // 高亮当前行
+            row.classList.add('table-primary');
+
+            // 选中当前行的单选按钮
+            const radio = row.querySelector('input[type="radio"]');
+            if (radio) {
+                selectedId = radio.value;
+                radio.checked = true;
+            }
+        }
+
+        // 点击编辑按钮时判断是否选择了数据
+        document.getElementById('editBtn').addEventListener('click', function (e) {
+            if (!selectedId) {
+                e.preventDefault();
+                const toastLive = document.getElementById('liveToast');
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive);
+                toastBootstrap.show();
+            } else {
+                document.getElementById('editBtn').href = '{% block edit_url %}#{% endblock %}' + selectedId + '/edit/';
+            }
+        });
+
+        // 点击删除按钮时判断是否选择了数据
+        document.getElementById('deleteBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            if (!selectedId) {
+                const toastLive = document.getElementById('liveToast');
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive);
+                toastBootstrap.show();
+            } else {
+                window.location.href = '{% block delete_url %}#{% endblock %}' + selectedId + '/delete/';
+            }
+        });
+    </script>
+{% endblock %}

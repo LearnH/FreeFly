@@ -1,0 +1,52 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 员工管理 {% endblock %}
+
+{% block search_label %} 姓名 {% endblock %}
+{% block search1 %}
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">编号</span>
+        <input type="text" class="form-control" name="searchCode" value="{{ emp_code_query }}">
+    </div>
+{% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'employee_add' %}{% endblock %}
+{% block edit_url %}/employee/{% endblock %}
+{% block delete_url %}/employee/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">员工编号</th>
+    <th scope="col">姓名</th>
+    <th scope="col">性别</th>
+    <th scope="col">国籍</th>
+    <th scope="col">手机号</th>
+    <th scope="col">入职类型</th>
+    <th scope="col">入职日期</th>
+    <th scope="col">部门</th>
+    <th scope="col">职位</th>
+    <th scope="col">是否教员</th>
+    <th scope="col">状态</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for employee in employee_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedAirport" value="{{ employee.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ employee.emp_code }}</td>
+            <td>{{ employee.name }}</td>
+            <td>{{ employee.get_gender_display }}</td>
+            <td>{{ employee.nationality|default_if_none:""  }}</td>
+            <td>{{ employee.phone|default_if_none:""  }}</td>
+            <td>{{ employee.get_employment_type_display|default_if_none:"" }}</td>
+            <td>{{ employee.employment_date|default_if_none:"" }}</td>
+            <td>{{ employee.department.name|default_if_none:"" }}</td>
+            <td>{{ employee.position.name|default_if_none:"" }}</td>
+            <td>{{ employee.get_is_coach_display|default_if_none:"" }}</td>
+            <td>{{ employee.get_status_display }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

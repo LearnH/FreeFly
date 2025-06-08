@@ -1,0 +1,63 @@
+{% load widget_tweaks %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <link href="{% static '/plugins/bootstrap-5.3.0-alpha2/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static '/plugins/fontawesome-free-6.6.0-web/css/all.css' %}"
+          type="text/css">
+    <style>
+        body {
+            background-image: url("{% static '/img/background.jpg' %}");
+            background-size: cover;
+        }
+
+        .container {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 200px auto;
+            max-width: 400px;
+            background-color: #f9f9f9;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h5 class="text-center">用户登录</h5>
+    <hr>
+    <form method="post">
+        {% csrf_token %}
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                用户名或密码错误，请检查以下输入：
+            </div>
+        {% endif %}
+        <!-- 用户名 -->
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="username-addon">
+                <i class="fa-solid fa-user "></i>
+            </span>
+            {{ form.username|attr:"placeholder:请输入用户名"|attr:"class:form-control"|attr:"autofocus"|attr:"autocomplete:off"|attr:"aria-label:Username"|attr:"aria-describedby:username-addon" }}
+        </div>
+
+        <!-- 密码 -->
+        <div class="input-group mb-3">
+                    <span class="input-group-text" id="password-addon">
+                        <i class="fa-solid fa-lock "></i>
+                    </span>
+            {{ form.password|attr:"placeholder:密码"|attr:"class:form-control"|attr:"autocomplete:off"|attr:"aria-label:Password"|attr:"aria-describedby:password-addon" }}
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">登录</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

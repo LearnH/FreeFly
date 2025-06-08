@@ -1,0 +1,156 @@
+{% extends 'base/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>{% if form.instance.id %}编辑{% else %}添加{% endif %}{{ theme }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    {# 非字段错误 #}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {# 字段 #}
+                    {% for field in form %}
+                        {# 复选框 #}
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            <div class="form-check mb-3 form-check-inline">
+                                {{ field|add_class:"form-check-input" }}
+                                <label class="form-check-label" for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+                            </div>
+                            {# 单选框 #}
+                        {% elif field.field.widget.input_type == 'radio' %}
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    {{ field.label }}
+                                </label>
+                                <div class="d-flex gap-3">
+                                    {% for radio in field %}
+                                        <div class="form-check">
+                                            {{ radio.tag }}
+                                            <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                                {{ radio.choice_label }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {# 时间字段 #}
+                        {% elif field.name in datetime_fields %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                <div class="input-group" id="datetimepicker_{{ field.name }}"
+                                     data-td-target-input="nearest">
+                                    <input type="text" class="form-control" data-td-format="datetime" id={{ field.name }}>
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                </div>
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {# 日期字段 #}
+                        {% elif field.name in date_fields %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                <div class="input-group" id="datetimepicker_{{ field.name }}" data-td-target-input="nearest">
+                                    <input type="text" class="form-control" data-td-format="date" id="{{ field.name }}" placeholder="{{ field.label }}">
+                                    <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                </div>
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {# 其他字段 #}
+                        {% else %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn-primary">提交</button>
+                    <a href="{% url back_url %}" class="btn btn-outline-primary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // 初始化日期选择器
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-td-target-input="nearest"]').forEach(function (el) {
+                const inputId = el.getAttribute('id').replace('datetimepicker_', '');
+                const inputElement = document.getElementById(inputId);
+
+                if (!inputElement) {
+                    console.error(`Input element with ID ${inputId} not found.`);
+                    return;
+                }
+
+                // 检查 inputElement 是否有 data-td-format 属性
+                const formatType = inputElement.getAttribute('data-td-format') || 'datetime'; // 默认 datetime
+
+                const options = {
+                    localization: {
+                        locale: 'zh-cn',
+                        format: formatType === 'date' ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm', // 动态设置格式
+                    },
+                    display: {
+                        components: {
+                            seconds: false,
+                            hours: formatType !== 'date',   // 如果是纯日期，不显示小时
+                            minutes: formatType !== 'date'   // 如果是纯日期，不显示分钟
+                        },
+                        buttons: {
+                            today: true,
+                            clear: true,
+                            close: true
+                        }
+                    }
+                };
+
+                new tempusDominus.TempusDominus(inputElement, options);
+            });
+        });
+    </script>
+{% endblock %}
