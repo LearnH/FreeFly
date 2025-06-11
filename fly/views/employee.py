@@ -85,7 +85,7 @@ def employee(request):
 @permission_required('fly.add_employee', raise_exception=True)
 def employee_add(request):
     if request.method == 'POST':
-        form = EmployeeForm(request.POST)
+        form = EmployeeForm(request.POST, request.FILES)
         print(form.errors)
         if form.is_valid():
             form.save()
@@ -94,11 +94,13 @@ def employee_add(request):
         form = EmployeeForm()
 
     date_fields = ['birth_date', 'employment_date', 'confirmable_date', 'termination_date']
+    image_fields = ['photo']
     context = {
         'form': form,
         'theme': '员工',
         'back_url': 'employee',
         'date_fields': date_fields,
+        'image_fields': image_fields,
     }
 
     return render(request, 'base/base_form.html', context)
@@ -109,18 +111,20 @@ def employee_add(request):
 def employee_edit(request, nid):
     row_object = fly_models.Employee.objects.filter(id=nid).first()
     if request.method == 'POST':
-        form = EmployeeForm(request.POST, instance=row_object)
+        form = EmployeeForm(request.POST, request.FILES, instance=row_object)
         if form.is_valid():
             form.save()
             return redirect('employee')
     else:
         form = EmployeeForm(instance=row_object)
     date_fields = ['birth_date', 'employment_date', 'confirmable_date', 'termination_date']
+    image_fields = ['photo']
     context = {
         'form': form,
         'theme': '员工',
         'back_url': 'employee',
         'date_fields': date_fields,
+        'image_fields': image_fields,
     }
 
     return render(request, 'base/base_form.html', context)

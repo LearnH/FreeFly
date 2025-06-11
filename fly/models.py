@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 # 运行基地
@@ -125,11 +127,18 @@ class Position(models.Model):
 
     def __str__(self):
         return self.name
+
+def get_emp_photo_path(instance, filename):
+    ext = filename.split('.')[-1]  # 获取文件扩展名
+    if ext.lower() not in ['jpg', 'jpeg', 'png', 'gif']:
+        ext = 'jpg'  # 默认使用 jpg 格式
+    return f'photos/emp_{instance.emp_code}_{uuid.uuid4().hex}.{ext}'
+
 # 员工
 class Employee(models.Model):
     emp_code = models.CharField(max_length=10, null=False, blank=False, unique=True, verbose_name='员工编号')
     name = models.CharField(max_length=100, null=False, blank=False, verbose_name='姓名')
-    photo = models.ImageField(verbose_name='照片', null=True, blank=True)
+    photo = models.ImageField(upload_to=get_emp_photo_path, verbose_name='照片', null=True, blank=True)
     gender_choices = (
         (1, '男'),
         (2, '女'),

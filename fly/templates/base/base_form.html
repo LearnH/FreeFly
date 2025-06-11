@@ -86,6 +86,61 @@
                                     </div>
                                 {% endif %}
                             </div>
+                            {# 图片上传字段 #}
+                        {% elif field.field.widget.input_type == 'file' and field.name in image_fields %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {% if field.value %}<img src="{{ field.value.url }}" alt="当前图片" class="img-thumbnail mt-2 float-end" style="max-height: 200px;">{% endif %}
+                                {{ field|add_class:"form-control" }}
+{#                                {% if field.value %}#}
+{#                                    <div class="d-flex  mt-2">#}
+{#                                        <small class="align-content-center me-2">当前图片:</small>#}
+{#                                        <img src="{{ field.value.url }}" alt="当前图片" class="img-thumbnail mt-2" style="max-height: 200px;">#}
+{#                                        <div class="form-check mt-2">#}
+{#                                            <input class="form-check-input" type="checkbox" name="{{ field.name }}-clear" id="{{ field.name }}-clear_id">#}
+{#                                            <label class="form-check-label" for="{{ field.name }}-clear_id">清除</label>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                {% endif %}#}
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted float-end">支持格式: JPG, PNG, GIF</small>
+                            </div>
+                            {# 文件上传字段 #}
+                        {% elif field.field.widget.input_type == 'file' %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ field|add_class:"form-control" }}
+                                {% if field.value %}
+                                    <div class="mt-2">
+                                        <small>当前文件: <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a></small>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox" name="{{ field.name }}-clear" id="{{ field.name }}-clear_id">
+                                            <label class="form-check-label" for="{{ field.name }}-clear_id">
+                                                清除当前文件
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
                             {# 其他字段 #}
                         {% else %}
                             <div class="mb-3">
@@ -116,8 +171,8 @@
 
 {% block extra_js %}
     <script>
-        // 初始化日期选择器
         document.addEventListener('DOMContentLoaded', function () {
+            // 初始化日期选择器
             document.querySelectorAll('[data-td-target-input="nearest"]').forEach(function (el) {
                 const inputId = el.getAttribute('id').replace('datetimepicker_', '');
                 const inputElement = document.getElementById(inputId);
@@ -151,6 +206,40 @@
 
                 new tempusDominus.TempusDominus(inputElement, options);
             });
+
+            // 图片预览功能
+            document.querySelectorAll('input[type="file"]').forEach(function(input) {
+                if (input.accept && input.accept.includes('image')) {
+                    input.addEventListener('change', function(e) {
+                        const file = e.target.files[0]; // 获取第一个文件
+                        if (file) {
+                            const reader = new FileReader(); // 创建文件读取器
+                            reader.onload = function(event) {
+                                let previewContainer = input.nextElementSibling; // 获取下一个兄弟元素
+                                // 如果不存在或不是预览容器，则创建一个新的容器
+                                if (!previewContainer || !previewContainer.classList.contains('image-preview-container')) {
+                                    previewContainer = document.createElement('div');
+                                    previewContainer.className = 'image-preview-container mt-2';
+                                    input.parentNode.insertBefore(previewContainer, input.nextSibling); // 插入到输入框后面
+                                }
+                                previewContainer.innerHTML = `
+                                    <img src="${event.target.result}" alt="预览" class="img-thumbnail" style="max-height: 200px;">
+                                `;
+                            };
+                            reader.readAsDataURL(file); // 读取文件为Data URL
+                        }
+                    });
+                }
+            });
         });
     </script>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .image-preview-container img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 {% endblock %}

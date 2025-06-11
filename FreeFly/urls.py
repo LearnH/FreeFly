@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.views import LoginView
 from django.urls import path, include
@@ -27,3 +28,8 @@ urlpatterns = [
     path('', include('fly.urls')),
     path('user/', include('user.urls')),
 ]
+
+# 确保在开发环境启用媒体文件服务（生产环境应该用 Nginx/Apache 处理）
+if settings.DEBUG:
+    from django.conf.urls.static import static
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
