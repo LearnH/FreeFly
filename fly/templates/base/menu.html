@@ -70,11 +70,43 @@
             <span class="nav-link-text">机场管理</span>
         </a>
     </li>
+    <li class="nav-item">
+        <a href="{% url 'aircraft_type' %}" class="nav-link text-dark {% if active_menu|startswith:'/aircraft_type/' %}active{% endif %}">
+            <i class="fa-brands fa-fantasy-flight-games "></i>
+            <span class="nav-link-text">机型管理</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'aircraft' %}" class="nav-link text-dark {% if active_menu|startswith:'/aircraft/' %}active{% endif %}">
+            <i class="fa-brands fa-fantasy-flight-games "></i>
+            <span class="nav-link-text">航空器管理</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="{% url 'flight_course' %}" class="nav-link text-dark {% if active_menu|startswith:'/flight_course/' %}active{% endif %}">
+            <i class="fa-brands fa-fantasy-flight-games "></i>
+            <span class="nav-link-text">课程管理</span>
+        </a>
+    </li>
 
     <li class="nav-item">
         <a href="{% url 'employee' %}" class="nav-link text-dark {% if active_menu|startswith:'/employee/' %}active{% endif %}">
             <i class="fa-solid fa-user-tie "></i>
             <span class="nav-link-text">员工管理</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{% url 'student' %}" class="nav-link text-dark {% if active_menu|startswith:'/student/' %}active{% endif %}">
+            <i class="fa-solid fa-user-tie "></i>
+            <span class="nav-link-text">学员管理</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="{% url 'flight_record' %}" class="nav-link text-dark {% if active_menu|startswith:'/flight_record/' %}active{% endif %}">
+            <i class="fa-solid fa-user-tie "></i>
+            <span class="nav-link-text">飞行时间记录</span>
         </a>
     </li>
     <!-- 更多菜单项... -->

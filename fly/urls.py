@@ -1,7 +1,8 @@
 
 from django.urls import path
-from fly.views import dashboard, operating_base, airport, employee
+from fly.views import dashboard, operating_base, airport, employee, student, flight_course, flight_record
 from fly.views.organization import company, department, position
+from fly.views.basic_archives import aircraft_type, aircraft
 
 
 urlpatterns = [
@@ -18,6 +19,10 @@ urlpatterns = [
     path('employee/add/', employee.employee_add, name='employee_add'),
     path('employee/<int:nid>/edit/', employee.employee_edit, name='employee_edit'),
     path('employee/<int:nid>/delete/', employee.employee_delete, name='employee_delete'),
+    path('student/', student.student, name='student'),
+    path('student/add/', student.student_add, name='student_add'),
+    path('student/<int:nid>/edit/', student.student_edit, name='student_edit'),
+    path('student/<int:nid>/delete/', student.student_delete, name='student_delete'),
     path('department/', department.department, name='department'),
     path('department/add/', department.department_add, name='department_add'),
     path('department/<int:nid>/edit/', department.department_edit, name='department_edit'),
@@ -30,4 +35,20 @@ urlpatterns = [
     path('position/add/', position.position_add, name='position_add'),
     path('position/<int:nid>/edit/', position.position_edit, name='position_edit'),
     path('position/<int:nid>/delete/', position.position_delete, name='position_delete'),
+    path('aircraft_type/', aircraft_type.aircraft_type, name='aircraft_type'),
+    path('aircraft_type/add/', aircraft_type.aircraft_type_add, name='aircraft_type_add'),
+    path('aircraft_type/<int:nid>/edit/', aircraft_type.aircraft_type_edit, name='aircraft_type_edit'),
+    path('aircraft_type/<int:nid>/delete/', aircraft_type.aircraft_type_delete, name='aircraft_type_delete'),
+    path('aircraft/', aircraft.aircraft, name='aircraft'),
+    path('aircraft/add/', aircraft.aircraft_add, name='aircraft_add'),
+    path('aircraft/<int:nid>/edit/', aircraft.aircraft_edit, name='aircraft_edit'),
+    path('aircraft/<int:nid>/delete/', aircraft.aircraft_delete, name='aircraft_delete'),
+    path('flight_course/', flight_course.flight_course, name='flight_course'),
+    path('flight_course/add/', flight_course.flight_course_add, name='flight_course_add'),
+    path('flight_course/<int:nid>/edit/', flight_course.flight_course_edit, name='flight_course_edit'),
+    path('flight_course/<int:nid>/delete/', flight_course.flight_course_delete, name='flight_course_delete'),
+    path('flight_record/', flight_record.flight_record, name='flight_record'),
+    path('flight_record/add/', flight_record.flight_record_add, name='flight_record_add'),
+    path('flight_record/<int:nid>/edit/', flight_record.flight_record_edit, name='flight_record_edit'),
+    path('flight_record/<int:nid>/delete/', flight_record.flight_record_delete, name='flight_record_delete'),
 ]

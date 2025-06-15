@@ -56,7 +56,7 @@
                                 </label>
                                 <div class="input-group" id="datetimepicker_{{ field.name }}"
                                      data-td-target-input="nearest">
-                                    <input type="text" class="form-control" data-td-format="datetime" id={{ field.name }}>
+                                    <input type="text" class="form-control" data-td-format="datetime" id="{{ field.name }}" name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                                 </div>
                                 {% if field.errors %}
@@ -75,7 +75,7 @@
                                     {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
                                 </label>
                                 <div class="input-group" id="datetimepicker_{{ field.name }}" data-td-target-input="nearest">
-                                    <input type="text" class="form-control" data-td-format="date" id="{{ field.name }}" placeholder="{{ field.label }}">
+                                    <input type="text" class="form-control" data-td-format="date" id="{{ field.name }}"  name="{{ field.name }}" value="{{ field.value|default_if_none:'' }}" placeholder="{{ field.label }}">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                                 </div>
                                 {% if field.errors %}
@@ -122,17 +122,6 @@
                                     {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
                                 </label>
                                 {{ field|add_class:"form-control" }}
-                                {% if field.value %}
-                                    <div class="mt-2">
-                                        <small>当前文件: <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a></small>
-                                        <div class="form-check mt-2">
-                                            <input class="form-check-input" type="checkbox" name="{{ field.name }}-clear" id="{{ field.name }}-clear_id">
-                                            <label class="form-check-label" for="{{ field.name }}-clear_id">
-                                                清除当前文件
-                                            </label>
-                                        </div>
-                                    </div>
-                                {% endif %}
                                 {% if field.errors %}
                                     <div class="text-danger">
                                         {% for error in field.errors %}

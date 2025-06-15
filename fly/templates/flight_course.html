@@ -1,0 +1,41 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 课程管理 {% endblock %}
+{% block search_label %} 课程名称 {% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'flight_course_add' %}{% endblock %}
+{% block edit_url %}/flight_course/{% endblock %}
+{% block delete_url %}/flight_course/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">课程名称</th>
+    <th scope="col">设备类型</th>
+    <th scope="col">机型性质</th>
+    <th scope="col">本转性质</th>
+    <th scope="col">飞行性质</th>
+    <th scope="col">昼夜性质</th>
+    <th scope="col">飞行种类</th>
+    <th scope="col">描述</th>
+    <th scope="col">状态</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for flight_course in flight_course_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedFlightCourse" value="{{ flight_course.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ flight_course.name }}</td>
+            <td>{{ flight_course.get_device_type_display|default_if_none:"" }}</td>
+            <td>{{ flight_course.get_aircraft_nature_display|default_if_none:"" }}</td>
+            <td>{{ flight_course.get_field_transition_display|default_if_none:"" }}</td>
+            <td>{{ flight_course.get_fly_nature_display|default_if_none:"" }}</td>
+            <td>{{ flight_course.get_day_night_display|default_if_none:"" }}</td>
+            <td>{{ flight_course.get_fly_category_display|default_if_none:"" }}</td>
+            <td>{{ flight_course.description|default_if_none:"" }}</td>
+            <td>{{ flight_course.get_status_display }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

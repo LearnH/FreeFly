@@ -1,0 +1,52 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 学员管理 {% endblock %}
+
+{% block search_label %} 姓名 {% endblock %}
+{% block search1 %}
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">编号</span>
+        <input type="text" class="form-control" name="searchCode" value="{{ stu_code_query }}">
+    </div>
+{% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'student_add' %}{% endblock %}
+{% block edit_url %}/student/{% endblock %}
+{% block delete_url %}/student/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">编号</th>
+    <th scope="col">姓名</th>
+    <th scope="col">性别</th>
+    <th scope="col">国籍</th>
+    <th scope="col">手机号</th>
+    <th scope="col">学员类型</th>
+    <th scope="col">入校日期</th>
+    <th scope="col">训练基地</th>
+    <th scope="col">训练单位</th>
+    <th scope="col">是否临时</th>
+    <th scope="col">状态</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for student in student_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedAirport" value="{{ student.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ student.stu_code }}</td>
+            <td>{{ student.name }}</td>
+            <td>{{ student.get_gender_display }}</td>
+            <td>{{ student.nationality|default_if_none:""  }}</td>
+            <td>{{ student.phone|default_if_none:""  }}</td>
+            <td>{{ student.get_student_type_display|default_if_none:"" }}</td>
+            <td>{{ student.enter_date|default_if_none:"" }}</td>
+            <td>{{ student.ope_base.name|default_if_none:"" }}</td>
+            <td>{{ student.company.name|default_if_none:"" }}</td>
+            <td>{{ student.get_is_temporary_display|default_if_none:"" }}</td>
+            <td>{{ student.get_status_display }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

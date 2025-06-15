@@ -1,0 +1,53 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 航空器管理 {% endblock %}
+{% block search_label %} 机号 {% endblock %}
+{% block search1 %}
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">所属机型</span>
+        <select class="form-select" name="searchAircraftType">
+            <option value="">全部</option>
+            {% for obj in aircraft_type_list %}
+                <option value="{{ obj.id }}"
+                        {% if obj.id|stringformat:'s' == aircraft_type_query|stringformat:'s' %}selected{% endif %}>
+                    {{ obj.name  }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+{% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'aircraft_add' %}{% endblock %}
+{% block edit_url %}/aircraft/{% endblock %}
+{% block delete_url %}/aircraft/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">机号</th>
+    <th scope="col">机型</th>
+    <th scope="col">引进日期</th>
+    <th scope="col">设备类型</th>
+    <th scope="col">状态</th>
+    <th scope="col">所属公司</th>
+    <th scope="col">所在基地</th>
+    <th scope="col">描述</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for aircraft in aircraft_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedAircraft" value="{{ aircraft.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ aircraft.name }}</td>
+            <td>{{ aircraft.aircraft_type|default_if_none:"" }}</td>
+            <td>{{ aircraft.introduction_date|default_if_none:"" }}</td>
+            <td>{{ aircraft.get_device_type_display|default_if_none:"" }}</td>
+            <td>{{ aircraft.company|default_if_none:"" }}</td>
+            <td>{{ aircraft.ope_base|default_if_none:"" }}</td>
+            <td>{{ aircraft.description|default_if_none:"" }}</td>
+            <td>{{ aircraft.get_status_display }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

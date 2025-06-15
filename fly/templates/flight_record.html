@@ -1,0 +1,83 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 飞行记录管理 {% endblock %}
+{% block search_label %} 备注 {% endblock %}
+{% block select_label %} 飞行种类 {% endblock %}
+{% block search2 %}
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">任务飞行员</span>
+        <select class="form-select" name="searchTaskPilot">
+            <option value="">全部</option>
+            {% for obj in task_pilot_list %}
+                <option value="{{ obj.id }}"
+                        {% if obj.id|stringformat:'s' == task_pilot_query|stringformat:'s' %}selected{% endif %}>
+                    {{ obj.name  }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group d-flex">
+        <label for="startDate" class="mr-2">开始</label>
+        <input type="date" class="form-control" id="startDate" name="startDate"
+               value="{{ start_date_query }}">
+    </div>
+    <div class="form-group d-flex">
+        <label for="endDate" class="mr-2">结束</label>
+        <input type="date" class="form-control" id="endDate" name="endDate"
+               value="{{ end_date_query }}">
+    </div>
+{% endblock %}
+
+{% block add_url %}{% url 'flight_record_add' %}{% endblock %}
+{% block edit_url %}/flight_record/{% endblock %}
+{% block delete_url %}/flight_record/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">飞行日期</th>
+    <th scope="col">任务飞行员</th>
+    <th scope="col">飞行课程</th>
+    <th scope="col">本转性质</th>
+    <th scope="col">飞行性质</th>
+    <th scope="col">昼夜性质</th>
+    <th scope="col">飞行种类</th>
+    <th scope="col">航空器</th>
+    <th scope="col">起飞站</th>
+    <th scope="col">降落站</th>
+    <th scope="col">开车时间</th>
+    <th scope="col">起飞时间</th>
+    <th scope="col">落地时间</th>
+    <th scope="col">关车时间</th>
+    <th scope="col">飞行时长</th>
+    <th scope="col">起落架次</th>
+    <th scope="col">左座</th>
+    <th scope="col">右座</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for flight_record in flight_record_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedFlightRecord" value="{{ flight_record.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ flight_record.flight_date }}</td>
+            <td>{{ flight_record.task_pilot|default_if_none:"" }}</td>
+            <td>{{ flight_record.flight_course|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_field_transition_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_fly_nature_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_day_night_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_fly_category_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.aircraft|default_if_none:"" }}</td>
+            <td>{{ flight_record.departure_airport|default_if_none:"" }}</td>
+            <td>{{ flight_record.arrival_airport|default_if_none:"" }}</td>
+            <td>{{ flight_record.open_time|default_if_none:"" }}</td>
+            <td>{{ flight_record.take_off_time|default_if_none:"" }}</td>
+            <td>{{ flight_record.landing_time|default_if_none:"" }}</td>
+            <td>{{ flight_record.close_time|default_if_none:"" }}</td>
+            <td>{{ flight_record.flight_duration|default_if_none:"" }}</td>
+            <td>{{ flight_record.flight_sortie|default_if_none:"" }}</td>
+            <td>{{ flight_record.left_seat_person|default_if_none:"" }}</td>
+            <td>{{ flight_record.right_seat_person|default_if_none:"" }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

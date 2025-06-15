@@ -1,0 +1,33 @@
+{% extends 'base/base_list.html' %}
+
+{% block title %} 机型管理 {% endblock %}
+{% block search_label %} 机型 {% endblock %}
+{% block select_label %} 状态 {% endblock %}
+
+{% block add_url %}{% url 'aircraft_type_add' %}{% endblock %}
+{% block edit_url %}/aircraft_type/{% endblock %}
+{% block delete_url %}/aircraft_type/{% endblock %}
+
+{% block table_headers %}
+    <th scope="col">机型</th>
+    <th scope="col">生产厂商</th>
+    <th scope="col">机型性质</th>
+    <th scope="col">描述</th>
+    <th scope="col">状态</th>
+{% endblock %}
+
+{% block table_body %}
+    {% for aircraft_type in aircraft_type_list %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedAircraftType" value="{{ aircraft_type.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ aircraft_type.name }}</td>
+            <td>{{ aircraft_type.manufacturer|default_if_none:"" }}</td>
+            <td>{{ aircraft_type.get_aircraft_nature_display|default_if_none:"" }}</td>
+            <td>{{ aircraft_type.description|default_if_none:"" }}</td>
+            <td>{{ aircraft_type.get_status_display }}</td>
+        </tr>
+    {% endfor %}
+{% endblock %}
