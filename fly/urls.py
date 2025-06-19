@@ -1,9 +1,8 @@
 
 from django.urls import path
-from fly.views import dashboard, operating_base, airport, employee, student, flight_course, flight_record
+from fly.views import dashboard, employee, student, flight_course, flight_record
 from fly.views.organization import company, department, position
-from fly.views.basic_archives import aircraft_type, aircraft
-
+from fly.views.basic_archives import aircraft_type, aircraft, airport, operating_base
 
 urlpatterns = [
     path('index/', dashboard.dashboard, name='dashboard'),
@@ -51,4 +50,6 @@ urlpatterns = [
     path('flight_record/add/', flight_record.flight_record_add, name='flight_record_add'),
     path('flight_record/<int:nid>/edit/', flight_record.flight_record_edit, name='flight_record_edit'),
     path('flight_record/<int:nid>/delete/', flight_record.flight_record_delete, name='flight_record_delete'),
+    path('get_aircraft_type/', flight_record.get_aircraft_type, name='get_aircraft_type'),
+    path('get_course_info/', flight_record.get_course_info, name='get_course_info'),
 ]

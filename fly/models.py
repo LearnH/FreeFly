@@ -425,3 +425,16 @@ class FlightRecord(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+
+    class Meta:
+        verbose_name = '飞行记录'
+        verbose_name_plural = '飞行记录'
+    def __str__(self):
+        return f"{self.task_pilot.name} - {self.flight_course.name} - {self.flight_date}"
+
+    @property
+    def flight_duration_display(self):
+        if self.flight_duration is None:
+            return ''
+        hours, remainder = divmod(self.flight_duration, 60)
+        return f"{hours:02d}:{remainder:02d}"

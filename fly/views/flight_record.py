@@ -1,4 +1,6 @@
+import datetime
 from django.contrib.auth.decorators import login_required, permission_required
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
 
@@ -6,11 +8,15 @@ from fly import models as fly_models
 from fly.utils import pagination
 from fly.utils.bootstrap import BaseModelForm
 
-
 class FlightRecordForm(BaseModelForm):
+    flight_duration_display = forms.CharField(label="飞行时长", required=False)
     class Meta:
         model = fly_models.FlightRecord
-        exclude = ('is_deleted', 'created_at', 'updated_at')
+        fields = ['flight_date', 'task_pilot', 'flight_course', 'field_transition','fly_nature',
+                  'day_night', 'fly_category', 'aircraft', 'aircraft_type', 'departure_airport',
+                  'arrival_airport', 'open_time', 'take_off_time', 'landing_time', 'close_time',
+                  'flight_duration', 'flight_duration_display', 'flight_sortie', 'left_seat_person',
+                  'right_seat_person', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,6 +32,40 @@ class FlightRecordForm(BaseModelForm):
             else:
                 raise AttributeError(f"{item}_choices does not exist in FlightRecord model.")
 
+        # 隐藏实际存储的分钟字段flight_duration
+        self.fields['flight_duration'].widget = forms.HiddenInput()
+        if self.instance and self.instance.flight_duration:
+            hours, remainder = divmod(self.instance.flight_duration, 60)
+            self.fields['flight_duration_display'].initial = f"{hours:02d}:{remainder:02d}"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        open_time = cleaned_data.get('open_time')
+        take_off_time = cleaned_data.get('take_off_time')
+        landing_time = cleaned_data.get('landing_time')
+        close_time = cleaned_data.get('close_time')
+        flight_date = cleaned_data.get('flight_date')
+
+        if open_time and take_off_time and landing_time and close_time:
+            if open_time >= take_off_time or take_off_time >= landing_time or landing_time >= close_time:
+                raise forms.ValidationError("时间顺序不正确，请重新输入。")
+
+        if open_time and close_time:
+            try:
+                open_dt = datetime.datetime.combine(flight_date, open_time)
+                close_dt = datetime.datetime.combine(flight_date, close_time)
+                if open_dt >= close_dt:
+                    raise forms.ValidationError("开车时间不能晚于关车时间。")
+                cleaned_data['flight_duration'] = (close_dt - open_dt).seconds // 60
+                hours, remainder = divmod(cleaned_data['flight_duration'], 60)
+                cleaned_data['flight_duration_display'] = f"{hours:02d}:{remainder:02d}"
+            except Exception as e:
+                raise forms.ValidationError(f"计算飞行时间出错：{e}")
+        else:
+            # 如果没有提供时间，则清空 flight_duration
+            cleaned_data['flight_duration'] = None
+            cleaned_data['flight_duration_display'] = ''
+        return cleaned_data
 
 @login_required
 @permission_required('fly.view_flight_record', raise_exception=True)
@@ -85,7 +125,7 @@ def flight_record_add(request):
         form = FlightRecordForm()
 
     date_fields = ['flight_date']
-    time_fields = ['open_time', 'takeoff_time', 'landing_time', 'close_time']
+    time_fields = ['open_time', 'take_off_time', 'landing_time', 'close_time']
 
     context = {
         'form': form,
@@ -95,7 +135,7 @@ def flight_record_add(request):
         'time_fields': time_fields,
     }
 
-    return render(request, 'base/base_form.html', context)
+    return render(request, 'flight_record_form.html', context)
 
 
 @login_required
@@ -111,7 +151,7 @@ def flight_record_edit(request, nid):
         form = FlightRecordForm(instance=row_object)
 
     date_fields = ['flight_date']
-    time_fields = ['open_time', 'takeoff_time', 'landing_time', 'close_time']
+    time_fields = ['open_time', 'take_off_time', 'landing_time', 'close_time']
 
     context = {
         'form': form,
@@ -121,7 +161,7 @@ def flight_record_edit(request, nid):
         'time_fields': time_fields,
     }
 
-    return render(request, 'base/base_form.html', context)
+    return render(request, 'flight_record_form.html', context)
 
 
 @login_required
@@ -132,3 +172,45 @@ def flight_record_delete(request, nid):
     obj.is_deleted = True
     obj.save()
     return redirect('flight_record')
+
+@login_required
+def get_aircraft_type(request):
+    aircraft_id = request.GET.get('aircraft_id', '')
+    try:
+        aircraft = fly_models.Aircraft.objects.get(id=aircraft_id)
+        return JsonResponse({
+            'success': True,
+            'aircraft_type': aircraft.aircraft_type.name,
+        })
+    except fly_models.Aircraft.DoesNotExist:
+        return JsonResponse({
+           'success': False,
+            'error': '航空器不存在',
+        })
+
+@login_required
+def get_course_info(request):
+    course_id = request.GET.get('flight_course_id', '')
+    # 参数校验
+    if not course_id.isdigit():
+        return JsonResponse({
+            'success': False,
+            'error': '无效的课程ID',
+        })
+
+    try:
+        course = fly_models.FlightCourse.objects.get(id=course_id)
+        return JsonResponse({
+            'success': True,
+            'course_info': {
+                'field_transition': course.field_transition,
+                'fly_category': course.fly_category,
+                'fly_nature': course.fly_nature,
+                'day_night': course.day_night,
+            },
+        })
+    except fly_models.FlightCourse.DoesNotExist:
+        return JsonResponse({
+           'success': False,
+            'error': '课程不存在',
+        })

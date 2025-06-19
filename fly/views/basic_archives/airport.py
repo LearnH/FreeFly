@@ -54,7 +54,7 @@ def airport(request):
         'icao_query': icao_query,
     }
 
-    return render(request, 'airport.html', context)
+    return render(request, 'basic_archives/airport.html', context)
 
 
 @login_required
@@ -69,7 +69,13 @@ def airport_add(request):
     else:
         form = AirportForm(initial={'status': 1})
 
-    return render(request, 'airport_form.html', {'form': form})
+    context = {
+        'form': form,
+        'theme': '机场',
+        'back_url': 'airport',
+    }
+
+    return render(request, 'base/base_form.html', context)
 
 
 @login_required
@@ -84,7 +90,13 @@ def airport_edit(request, nid):
     else:
         form = AirportForm(instance=row_object)
 
-    return render(request, 'airport_form.html', {'form': form})
+    context = {
+        'form': form,
+        'theme': '机场',
+        'back_url': 'airport',
+    }
+
+    return render(request, 'base/base_form.html', context)
 
 
 @login_required

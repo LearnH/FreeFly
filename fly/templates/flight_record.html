@@ -36,10 +36,6 @@
     <th scope="col">飞行日期</th>
     <th scope="col">任务飞行员</th>
     <th scope="col">飞行课程</th>
-    <th scope="col">本转性质</th>
-    <th scope="col">飞行性质</th>
-    <th scope="col">昼夜性质</th>
-    <th scope="col">飞行种类</th>
     <th scope="col">航空器</th>
     <th scope="col">起飞站</th>
     <th scope="col">降落站</th>
@@ -51,6 +47,10 @@
     <th scope="col">起落架次</th>
     <th scope="col">左座</th>
     <th scope="col">右座</th>
+    <th scope="col">本转性质</th>
+    <th scope="col">飞行性质</th>
+    <th scope="col">昼夜性质</th>
+    <th scope="col">飞行种类</th>
 {% endblock %}
 
 {% block table_body %}
@@ -63,10 +63,6 @@
             <td>{{ flight_record.flight_date }}</td>
             <td>{{ flight_record.task_pilot|default_if_none:"" }}</td>
             <td>{{ flight_record.flight_course|default_if_none:"" }}</td>
-            <td>{{ flight_record.get_field_transition_display|default_if_none:"" }}</td>
-            <td>{{ flight_record.get_fly_nature_display|default_if_none:"" }}</td>
-            <td>{{ flight_record.get_day_night_display|default_if_none:"" }}</td>
-            <td>{{ flight_record.get_fly_category_display|default_if_none:"" }}</td>
             <td>{{ flight_record.aircraft|default_if_none:"" }}</td>
             <td>{{ flight_record.departure_airport|default_if_none:"" }}</td>
             <td>{{ flight_record.arrival_airport|default_if_none:"" }}</td>
@@ -74,10 +70,14 @@
             <td>{{ flight_record.take_off_time|default_if_none:"" }}</td>
             <td>{{ flight_record.landing_time|default_if_none:"" }}</td>
             <td>{{ flight_record.close_time|default_if_none:"" }}</td>
-            <td>{{ flight_record.flight_duration|default_if_none:"" }}</td>
+            <td>{{ flight_record.flight_duration_display|default_if_none:"" }}</td>
             <td>{{ flight_record.flight_sortie|default_if_none:"" }}</td>
             <td>{{ flight_record.left_seat_person|default_if_none:"" }}</td>
             <td>{{ flight_record.right_seat_person|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_field_transition_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_fly_nature_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_day_night_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_fly_category_display|default_if_none:"" }}</td>
         </tr>
     {% endfor %}
 {% endblock %}

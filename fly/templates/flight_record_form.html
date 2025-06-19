@@ -1,3 +1,4 @@
+
 {% extends 'base/base.html' %}
 {% load widget_tweaks %}
 
@@ -40,7 +41,7 @@
                                     {% for radio in field %}
                                         <div class="form-check">
                                             {{ radio.tag }}
-                                            <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                            <label class="form-check-label" for="{{ radio.id_for_label }}" >
                                                 {{ radio.choice_label }}
                                             </label>
                                         </div>
@@ -114,16 +115,6 @@
                                 </label>
                                 {% if field.value %}<img src="{{ field.value.url }}" alt="当前图片" class="img-thumbnail mt-2 float-end" style="max-height: 200px;">{% endif %}
                                 {{ field|add_class:"form-control" }}
-{#                                {% if field.value %}#}
-{#                                    <div class="d-flex  mt-2">#}
-{#                                        <small class="align-content-center me-2">当前图片:</small>#}
-{#                                        <img src="{{ field.value.url }}" alt="当前图片" class="img-thumbnail mt-2" style="max-height: 200px;">#}
-{#                                        <div class="form-check mt-2">#}
-{#                                            <input class="form-check-input" type="checkbox" name="{{ field.name }}-clear" id="{{ field.name }}-clear_id">#}
-{#                                            <label class="form-check-label" for="{{ field.name }}-clear_id">清除</label>#}
-{#                                        </div>#}
-{#                                    </div>#}
-{#                                {% endif %}#}
                                 {% if field.errors %}
                                     <div class="text-danger">
                                         {% for error in field.errors %}
@@ -149,6 +140,34 @@
                                     </div>
                                 {% endif %}
                             </div>
+                            {# 飞行时长 #}
+                        {% elif field.name == 'flight_duration' %}
+                            <div class="mb-3" style="display: none;">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                <input type="text" id="flight_duration" class="form-control" readonly name="{{ field.name }}" value="{{ field.value|default:'' }}">
+                            </div>
+                            {# 飞行时长展示 #}
+                        {% elif field.name == 'flight_duration_display' %}
+                            <div class="mb-3">
+                                <label for="id_flight_duration_display" class="form-label">飞行时长</label>
+                                <input type="text" id="id_flight_duration_display" class="form-control" readonly value="{{ field.value|default:'' }}">
+                            </div>
+                            {# 机型展示 #}
+                        {% elif field.name == 'aircraft_type' %}
+                            <div class="mb-3">
+                                <label for="id_aircraft_type" class="form-label">机型</label>
+                                <input type="text" id="id_aircraft_type" class="form-control" readonly value="{{ form.instance.aircraft_type.name|default:'' }}">
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
                             {# 其他字段 #}
                         {% else %}
                             <div class="mb-3">
@@ -157,7 +176,6 @@
                                     {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
                                 </label>
                                 {{ field }}
-
                                 {% if field.errors %}
                                     <div class="text-danger">
                                         {% for error in field.errors %}
@@ -194,7 +212,7 @@
                 const formatType = inputElement.getAttribute('data-td-format') || 'datetime'; // 默认 datetime
 
                 // 获取当前值并确保格式正确
-                const currentValue = inputElement.value;
+                const currentValue = inputElement.value.trim();
                 if (currentValue) {
                     if (formatType === 'date') {
                         // 如果值是 "2025年1月1日" 格式，转换为 "2025-01-01"
@@ -239,6 +257,117 @@
                 new tempusDominus.TempusDominus(inputElement, options);
             });
 
+            const openTimeInput = document.getElementById('open_time');
+            const closeTimeInput = document.getElementById('close_time');
+            const durationDisplay = document.getElementById('id_flight_duration_display');
+            const flightDurationInput = document.getElementById('flight_duration');
+
+            function calculateDuration() {
+                const openTimeStr = openTimeInput.value;
+                const closeTimeStr = closeTimeInput.value;
+
+                if (!openTimeStr || !closeTimeStr) {
+                    durationDisplay.value = '';
+                    flightDurationInput.value = '';
+                    return;
+                }
+
+                const [openH, openM] = openTimeStr.split(':').map(Number);
+                const [closeH, closeM] = closeTimeStr.split(':').map(Number);
+
+                const open = new Date();
+                open.setHours(openH, openM, 0, 0);
+
+                const close = new Date();
+                close.setHours(closeH, closeM, 0, 0);
+
+                if (open >= close) {
+                    durationDisplay.value = '';
+                    flightDurationInput.value = '';
+                    alert('开车时间不能晚于关车时间');
+                    return;
+                }
+                // 计算两个时间点之间的差异（以分钟计）
+                const diffMinutes = Math.floor((close - open) / 60000); // 毫秒转分钟
+                const hours = Math.floor(diffMinutes / 60);
+                const minutes = diffMinutes % 60;
+                // 更新页面上的显示
+                durationDisplay.value = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                flightDurationInput.value = diffMinutes;
+            }
+            // 监听时间输入框的变化
+            openTimeInput.addEventListener('change', calculateDuration);
+            closeTimeInput.addEventListener('change', calculateDuration);
+
+            // 监听航空器输入框的变化
+            const aircraftInput = document.getElementById('id_aircraft');
+            const aircraftTypeInput = document.getElementById('id_aircraft_type');
+            if (aircraftInput && aircraftTypeInput) {
+                aircraftInput.addEventListener('change', function () {
+                    const aircraftId = aircraftInput.value;
+                    if (!aircraftId) {
+                        aircraftTypeInput.value = '';
+                        return;
+                    }
+
+                    // 发送 AJAX 请求获取航空器类型
+                    fetch('/get_aircraft_type/?aircraft_id='+ aircraftId)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                aircraftTypeInput.value = data.aircraft_type;
+                            }else {
+                                aircraftTypeInput.value = '';
+                                alert('获取机型失败: ' + data.error)
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching aircraft type:', error);
+                            alert('网络错误请重试');
+                        })
+                });
+            }
+
+            //监听课程输入框的变化
+            const flightCourseInput = document.getElementById('id_flight_course');
+            const fieldTransitionInput = document.querySelectorAll('input[name="field_transition"]');
+            const flyNatureInput = document.querySelectorAll('input[name="fly_nature"]');
+            const dayNightInput = document.querySelectorAll('input[name="day_night"]');
+            const flyCategoryInput = document.querySelectorAll('input[name="fly_category"]');
+            if (flightCourseInput && fieldTransitionInput.length >0 && flyNatureInput.length >0 && dayNightInput.length >0 && flyCategoryInput.length >0) {
+                    flightCourseInput.addEventListener('change', function () {
+                        const flightCourseId = flightCourseInput.value;
+                        if (!flightCourseId) {
+                            return;
+                        }
+                        // 发送 AJAX 请求获取课程信息
+                        fetch('/get_course_info/?flight_course_id='+ flightCourseId)
+                           .then(response => response.json())
+                           .then(data => {
+                                if (data.success) {
+                                    fieldTransitionInput.forEach(radio => {
+                                        radio.checked = (parseInt(radio.value,10) === data.course_info.field_transition);
+                                    });
+                                    flyNatureInput.forEach(radio => {
+                                        radio.checked = (parseInt(radio.value,10) === data.course_info.fly_nature);
+                                    });
+                                    dayNightInput.forEach(radio => {
+                                        radio.checked = (radio.value === String(data.course_info.day_night))
+                                    });
+                                    flyCategoryInput.forEach(radio => {
+                                        radio.checked = (radio.value === String(data.course_info.fly_category))
+                                    });
+                                }else {
+                                    alert('获取课程信息失败:'+ data.error)
+                                }
+                           })
+                        .catch(error => {
+                            console.error('Error fetching flight course:', error);
+                            alert('网络错误请重试');
+                        })
+                    });
+            }
+
             // 图片预览功能
             document.querySelectorAll('input[type="file"]').forEach(function(input) {
                 if (input.accept && input.accept.includes('image')) {
@@ -263,6 +392,7 @@
                     });
                 }
             });
+            {% block addEventListener %}{% endblock %}
         });
     </script>
 {% endblock %}

@@ -58,7 +58,7 @@ def operating_base(request):
         'status_query': status_query,
     }
 
-    return render(request, 'operating_base.html', context)
+    return render(request, 'basic_archives/operating_base.html', context)
 
 @login_required
 @permission_required('fly.add_operating_base', raise_exception=True)
@@ -73,7 +73,13 @@ def operating_base_add(request):
         airport_queryset = fly_models.Airport.objects.filter(is_deleted=False)  # 只显示未删除的机场
         form = OperatingBaseForm(initial={'status': 1}, airport_queryset=airport_queryset)
 
-    return render(request, 'operating_base_form.html', {'form': form})
+    context = {
+        'form': form,
+        'theme': '基地',
+        'back_url': 'operating_base',
+    }
+
+    return render(request, 'base/base_form.html', context)
 
 @login_required
 @permission_required('fly.change_operating_base', raise_exception=True)
@@ -86,7 +92,14 @@ def operating_base_edit(request, nid):
             return redirect('operating_base')
     else:
         form = OperatingBaseForm(instance=row_object)
-    return render(request, 'operating_base_form.html', {'form': form})
+
+    context = {
+        'form': form,
+        'theme': '基地',
+        'back_url': 'operating_base',
+    }
+
+    return render(request, 'base/base_form.html', context)
 
 @login_required
 @permission_required('fly.delete_operating_base', raise_exception=True)
