@@ -74,7 +74,10 @@ def position_add(request):
         form = PositionForm(request.POST)
         print(form.errors)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
             return redirect('position')  # 重定向到项目列表页
     else:
         form = PositionForm(initial={'status': 1})
@@ -95,7 +98,9 @@ def position_edit(request, nid):
     if request.method == 'POST':
         form = PositionForm(request.POST, instance=row_object)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
             return redirect('position')
     else:
         form = PositionForm(instance=row_object)

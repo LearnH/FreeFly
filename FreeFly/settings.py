@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'fly.apps.FlyappConfig',
     'widget_tweaks',
+    'simple_history',          # 审计日志插件
 ]
 
 MIDDLEWARE = [
@@ -49,6 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'fly.utils.middleware.RequestContextMiddleware',  # 自定义中间件
+    'simple_history.middleware.HistoryRequestMiddleware',  # 审计日志插件
 ]
 
 ROOT_URLCONF = 'FreeFly.urls'
@@ -133,3 +136,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/index/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+AUTH_USER_MODEL='auth.User'
+
+
+# 配置 Celery
+# 127.0.0.1 表示本地主机；
+# 6379 是 Redis 默认端口；
+# /0 是 Redis 的数据库编号。
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'

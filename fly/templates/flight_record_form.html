@@ -160,6 +160,8 @@
                             <div class="mb-3">
                                 <label for="id_aircraft_type" class="form-label">机型</label>
                                 <input type="text" id="id_aircraft_type" class="form-control" readonly value="{{ form.instance.aircraft_type.name|default:'' }}">
+                                <!-- input只读状态不提交数据，添加隐藏字段，用于保存数据 -->
+                                <input type="hidden" id="aircraft_type" name="aircraft_type" value="{{ form.instance.aircraft_type.id|default:'' }}">
                                 {% if field.errors %}
                                     <div class="text-danger">
                                         {% for error in field.errors %}
@@ -315,9 +317,12 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                aircraftTypeInput.value = data.aircraft_type;
+                                aircraftTypeInput.value = data.aircraft_type_name;
+                                // 更新隐藏字段的值
+                                document.querySelector('[name="aircraft_type"]').value = data.aircraft_type_id;
                             }else {
                                 aircraftTypeInput.value = '';
+                                document.getElementById('aircraft_type').value = '';
                                 alert('获取机型失败: ' + data.error)
                             }
                         })

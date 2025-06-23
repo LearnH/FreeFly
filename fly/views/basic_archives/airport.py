@@ -64,7 +64,10 @@ def airport_add(request):
         form = AirportForm(request.POST)
         print(form.errors)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
             return redirect('airport')  # 重定向到项目列表页
     else:
         form = AirportForm(initial={'status': 1})
@@ -85,7 +88,9 @@ def airport_edit(request, nid):
     if request.method == 'POST':
         form = AirportForm(request.POST, instance=row_object)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
             return redirect('airport')
     else:
         form = AirportForm(instance=row_object)

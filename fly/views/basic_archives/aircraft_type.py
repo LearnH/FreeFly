@@ -61,7 +61,10 @@ def aircraft_type_add(request):
         form = AircraftTypeForm(request.POST)
         print(form.errors)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
             return redirect('aircraft_type')  # 重定向到项目列表页
     else:
         form = AircraftTypeForm()
@@ -82,7 +85,9 @@ def aircraft_type_edit(request, nid):
     if request.method == 'POST':
         form = AircraftTypeForm(request.POST, instance=row_object)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
             return redirect('aircraft_type')
     else:
         form = AircraftTypeForm(instance=row_object)

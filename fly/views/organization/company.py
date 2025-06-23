@@ -65,7 +65,10 @@ def company_add(request):
         form = CompanyForm(request.POST)
         print(form.errors)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
             return redirect('company')  # 重定向到项目列表页
     else:
         form = CompanyForm(initial={'status': 1})
@@ -89,7 +92,9 @@ def company_edit(request, nid):
     if request.method == 'POST':
         form = CompanyForm(request.POST, instance=row_object)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
             return redirect('company')
     else:
         form = CompanyForm(instance=row_object)

@@ -10,7 +10,7 @@ from fly.utils.bootstrap import BaseModelForm
 class FlightCourseForm(BaseModelForm):
     class Meta:
         model = fly_models.FlightCourse
-        exclude = ('is_deleted','created_at','updated_at')
+        exclude = ('is_deleted','created_at','updated_at', 'created_by', 'updated_by')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

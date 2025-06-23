@@ -1,6 +1,41 @@
 import uuid
 
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
+
+from FreeFly import settings
+from simple_history.models import HistoricalRecords
+from threading import current_thread
+from fly.utils import tasks
+
+# 异步记录操作日志
+class AuditLog(models.Model):
+    ACTION_CHOICES = (
+        ('created', 'Created'),
+        ('updated', 'Updated'),
+        ('deleted', 'Deleted'),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='audit_logs'
+    )
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    # 通用外键字段
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE) # 模型类型
+    object_id = models.PositiveIntegerField() # 模型实例的主键
+    content_object = GenericForeignKey('content_type', 'object_id') # 关联的模型实例
+
+    def __str__(self):
+        return f"{self.user} {self.action} {self.content_type.model}({self.object_id})"
 
 # 运行基地
 class OperatingBase(models.Model):
@@ -23,6 +58,9 @@ class OperatingBase(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='ope_base_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='ope_base_updated_by' )
 
     class Meta:
         verbose_name = '运行基地'
@@ -38,10 +76,10 @@ class Airport(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='经度', null=True, blank=True)
     address = models.CharField(max_length=200, verbose_name='地址', null=True, blank=True)
     description = models.TextField(verbose_name='描述', null=True, blank=True)
-    is_owner = models.BooleanField(default=False, verbose_name='是否本企业机场')
-    is_air_harbor = models.BooleanField(default=False, verbose_name='是否水上机场')
-    is_temporary = models.BooleanField(default=False, verbose_name='是否临时站点')
-    is_tower = models.BooleanField(default=False, verbose_name='是否塔台机场')
+    is_owner = models.BooleanField(default=False, verbose_name='本企业机场')
+    is_air_harbor = models.BooleanField(default=False, verbose_name='水上机场')
+    is_temporary = models.BooleanField(default=False, verbose_name='临时站点')
+    is_tower = models.BooleanField(default=False, verbose_name='塔台机场')
     status_choices = (
         (1, '启用'),
         (2, '停用')
@@ -50,6 +88,9 @@ class Airport(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='airport_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='airport_updated_by' )
 
     class Meta:
         verbose_name = '机场'
@@ -80,6 +121,9 @@ class Company(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='company_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='company_updated_by' )
 
     class Meta:
         verbose_name = '公司'
@@ -100,6 +144,9 @@ class Department(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='department_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='department_updated_by' )
 
     class Meta:
         verbose_name = '部门'
@@ -120,6 +167,9 @@ class Position(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='position_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='position_updated_by' )
 
     class Meta:
         verbose_name = '职位'
@@ -172,10 +222,11 @@ class Person(models.Model):
     )
     emergency_contact_relationship = models.CharField(max_length=50, null=True, blank=True, verbose_name='紧急联系人关系', choices=emergency_contact_relationship_choices)
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
-    # created_user = models.ForeignKey('User', on_delete=models.SET_NULL, verbose_name='创建人', null=True, blank=True, related_name='created_employees')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    # updated_user = models.ForeignKey('User', on_delete=models.SET_NULL, verbose_name='更新人', null=True, blank=True, related_name='updated_employees')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='person_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='person_updated_by' )
 
     def save(self, *args, **kwargs):
         if not self.pk:  # 只在创建时设置
@@ -292,6 +343,10 @@ class AircraftType(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='aircraft_type_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='aircraft_type_updated_by' )
+
     class Meta:
         verbose_name = '机型'
         verbose_name_plural = '机型'
@@ -330,6 +385,9 @@ class Aircraft(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='aircraft_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='aircraft_updated_by' )
 
     class Mate:
         verbose_name = '航空器'
@@ -380,11 +438,25 @@ class FlightCourse(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='flight_course_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='flight_course_updated_by' )
+
     class Meta:
         verbose_name = '飞行课程'
         verbose_name_plural = '飞行课程'
     def __str__(self):
         return self.name
+    def save(self, *args, **kwargs):
+        user = getattr(current_thread(), 'current_user', None)
+        ip = getattr(current_thread(), 'remote_addr', '')
+        ua = getattr(current_thread(), 'user_agent', '')
+
+        is_new = not self.pk
+        if is_new:
+            self.created_by = user
+        self.updated_by = user
+        super().save(*args, **kwargs)
 # 飞行记录
 class FlightRecord(models.Model):
     flight_date = models.DateField(verbose_name='飞行日期')
@@ -410,7 +482,7 @@ class FlightRecord(models.Model):
     day_night = models.SmallIntegerField(verbose_name='昼夜性质', default=1, choices=day_night_choices)
     fly_category = models.SmallIntegerField(verbose_name='飞行种类', choices=FlightCourse.fly_category_choices, null=True, blank=True)
     aircraft = models.ForeignKey('Aircraft', on_delete=models.CASCADE, verbose_name='航空器')
-    aircraft_type = models.ForeignKey('AircraftType', on_delete=models.CASCADE, verbose_name='机型')
+    aircraft_type = models.ForeignKey('AircraftType', on_delete=models.CASCADE, verbose_name='机型', null=True, blank=True)
     departure_airport = models.ForeignKey('Airport', on_delete=models.CASCADE, related_name='departure_records', verbose_name='出发机场', null=True, blank=True)
     arrival_airport = models.ForeignKey('Airport', on_delete=models.CASCADE, related_name='arrival_records', verbose_name='到达机场', null=True, blank=True)
     open_time = models.TimeField(verbose_name='开车时间')
@@ -425,6 +497,11 @@ class FlightRecord(models.Model):
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    # 记录创建和修改的操作人
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='flight_record_created_by' )
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='flight_record_updated_by' )
+
+    history = HistoricalRecords(user_model=settings.AUTH_USER_MODEL)  # 审计日志
 
     class Meta:
         verbose_name = '飞行记录'
@@ -432,6 +509,30 @@ class FlightRecord(models.Model):
     def __str__(self):
         return f"{self.task_pilot.name} - {self.flight_course.name} - {self.flight_date}"
 
+    def save(self, *args, **kwargs):
+        user = getattr(current_thread(), 'current_user', None)
+        ip = getattr(current_thread(), 'remote_addr', '')
+        ua = getattr(current_thread(), 'user_agent', '')
+
+        is_new = not self.pk
+        if is_new:
+            self.created_by = user
+        self.updated_by = user
+
+        super().save(*args, **kwargs)
+
+        # 获取内容类型（app_label 和 model 名）
+        content_type = ContentType.objects.get_for_model(self)
+        # 异步记录操作日志
+        tasks.async_log_audit.delay(
+            user_id=user.id if user else None,
+            content_type_app_label=content_type.app_label,
+            content_type_model=content_type.model,
+            object_id=self.id,
+            action='created' if is_new else 'updated',
+            ip=ip,
+            user_agent=ua
+        )
     @property
     def flight_duration_display(self):
         if self.flight_duration is None:

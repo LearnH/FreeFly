@@ -180,7 +180,8 @@ def get_aircraft_type(request):
         aircraft = fly_models.Aircraft.objects.get(id=aircraft_id)
         return JsonResponse({
             'success': True,
-            'aircraft_type': aircraft.aircraft_type.name,
+            'aircraft_type_id': aircraft.aircraft_type.id,
+            'aircraft_type_name': aircraft.aircraft_type.name,
         })
     except fly_models.Aircraft.DoesNotExist:
         return JsonResponse({

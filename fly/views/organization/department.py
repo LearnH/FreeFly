@@ -74,7 +74,10 @@ def department_add(request):
         form = DepartmentForm(request.POST)
         print(form.errors)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
             return redirect('department')  # 重定向到项目列表页
     else:
         form = DepartmentForm(initial={'status': 1})
@@ -95,7 +98,9 @@ def department_edit(request, nid):
     if request.method == 'POST':
         form = DepartmentForm(request.POST, instance=row_object)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
             return redirect('department')
     else:
         form = DepartmentForm(instance=row_object)

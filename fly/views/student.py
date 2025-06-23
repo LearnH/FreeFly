@@ -87,7 +87,10 @@ def student_add(request):
         form = StudentForm(request.POST, request.FILES)
         print(form.errors)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
             return redirect('student')  # 重定向到项目列表页
     else:
         form = StudentForm()
@@ -112,7 +115,9 @@ def student_edit(request, nid):
     if request.method == 'POST':
         form = StudentForm(request.POST, request.FILES, instance=row_object)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
             return redirect('student')
     else:
         form = StudentForm(instance=row_object)

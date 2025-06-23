@@ -88,7 +88,10 @@ def employee_add(request):
         form = EmployeeForm(request.POST, request.FILES)
         print(form.errors)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.updated_by = request.user
+            obj.save()
             return redirect('employee')  # 重定向到项目列表页
     else:
         form = EmployeeForm()
@@ -113,7 +116,9 @@ def employee_edit(request, nid):
     if request.method == 'POST':
         form = EmployeeForm(request.POST, request.FILES, instance=row_object)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
             return redirect('employee')
     else:
         form = EmployeeForm(instance=row_object)
