@@ -1,0 +1,434 @@
+{% extends "base/base.html" %}
+{% load widget_tweaks %}
+{% block style %}
+    <style>
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border: none;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 25px;
+            border: none;
+            height: 50px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #3a7bd5;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        .group-search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .group-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 10;
+        }
+
+        .group-search-input {
+            padding-left: 40px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+        }
+
+        .groups-container {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 5px;
+            background-color: white;
+        }
+
+        .group-item {
+            padding: 2px 15px;
+            border-radius: 6px;
+            {#margin-bottom: 8px;#}
+            transition: all 0.2s;
+            {#border: 1px solid #e9ecef;#}
+            display: flex;
+            align-items: center;
+        }
+
+        .group-item:hover {
+            background-color: #e9f7fe;
+            border-color: #b8e2fb;
+            cursor: pointer;
+        }
+
+        .group-item.selected {
+            background-color: #d1ecff;
+            border-color: #86c6f8;
+        }
+
+        .group-item .badge {
+            margin-left: auto;
+            background-color: #3a7bd5;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        /* 大尺寸 */
+        .btn-close-lg {
+            width: 2em;
+            height: 2em;
+        }
+
+        /* 小尺寸 */
+        .btn-close-sm {
+            width: 0.4em;
+            height: 0.4em;
+        }
+
+        .btn-action {
+            min-width: 100px;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            border: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background-color: #28a745;
+        }
+
+        .status-inactive {
+            background-color: #dc3545;
+        }
+
+        .form-check-input:checked {
+            background-color: #3a7bd5;
+            border-color: #3a7bd5;
+        }
+
+        .selected-groups-badge {
+            background-color: #e9f7fe;
+            border-radius: 20px;
+            padding: 5px 12px;
+            margin: 0 5px 0 0;
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .selected-groups-container {
+            margin-top: 10px;
+            {#min-height: 40px;#}
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{{ user_id|yesno:"编辑用户,添加用户" }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate autocomplete="off">
+                    {% csrf_token %}
+
+                    {# 显示非字段错误 #}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">用户名</label>
+                        {% render_field form.username class="form-control" %}
+                        <div class="form-text">必填；长度为150个字符或以下；只能包含字母、数字、特殊字符“@”、“.”、“-”和“_”。</div>
+                        {% if form.username.errors %}
+                            <div class="text-danger">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="input-group mb-3">
+                        <label for="{{ form.last_name.id_for_label }}" class="input-group-text">姓氏</label>
+                        {% render_field form.last_name class="form-control" %}
+                        <label for="{{ form.first_name.id_for_label }}" class="input-group-text">名字</label>
+                        {% render_field form.first_name class="form-control" %}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">邮箱</label>
+                        {% render_field form.email class="form-control" %} {# 使用render_field来渲染字段 #}
+                        {% if form.email.errors %}
+                            <div class="text-danger">
+                                {% for error in form.email.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <input type="hidden" id="userId" value="{{ user_id }}" />
+                    {% if not user_id %}
+                        <div class="mb-3">
+                            <label for="password1" class="form-label">密码</label>
+                            <input type="password" class="form-control" id="password1" name="password1"
+                                   value="{{ form.password1.value|default:'' }}" required autocomplete="new-password">
+                            <div class="form-text">
+                                你的密码不能与你的其他个人信息太相似。
+                                你的密码必须包含至少 8 个字符。
+                                你的密码不能是一个常见密码。
+                                你的密码不能全都是数字。
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.password1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="password2" class="form-label">确认密码</label>
+                            {% render_field form.password2 class="form-control" %}
+                            <div class="form-text">请再次输入密码以确保其正确。</div>
+                            {% if form.password2.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.password2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">权限</label>
+                        <div class="form-check">
+                            {% render_field form.is_active class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">活跃</label>
+                        </div>
+                        <div class="form-text">指明用户是否被认为是活跃的。以反选代替删除帐号。</div>
+                        <div class="form-check">
+                            {% render_field form.is_staff class="form-check-input" %}
+                            <label class="form-check-label" for="{{ form.is_staff.id_for_label }}">员工状态</label>
+                        </div>
+                        <div class="form-text">指明用户是否可以登录到系统管理站点。</div>
+                        <div class="form-check">
+                            {% render_field form.is_superuser class="form-check-input" %}
+                            <label class="form-check-label"
+                                   for="{{ form.is_superuser.id_for_label }}">超级管理员</label>
+                        </div>
+                        <div class="form-text">指明该用户缺省拥有所有权限。</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.groups.id_for_label }}" class="form-label">用户组</label>
+                        <div class="group-search-container">
+                            <i class="fas fa-search group-search-icon"></i>
+                            <input type="text" class="form-control group-search-input" id="groupSearch" placeholder="搜索用户组...">
+                        </div>
+
+                        <div class="groups-container" id="groupsContainer">
+                            <!-- 用户组列表将通过JS动态生成 -->
+                        </div>
+
+                        <div class="selected-groups-container" id="selectedGroupsContainer">
+                            <!-- 已选用户组将通过JS动态显示 -->
+                        </div>
+
+                        <div class="form-text text-muted mt-2">
+                            选择用户所属的用户组。已选择 <span id="selectedCount">0</span> 个用户组。
+                        </div>
+
+                        <!-- 隐藏字段用于存储选择的用户组ID -->
+                        <input type="hidden" name="selectedGroupsInput" id="selectedGroupsInput" value="">
+                    </div>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <a href="{% url 'users' %}" class="btn btn-outline-primary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        let allGroups = [];
+        let selectedGroups = [];
+
+        // 初始化数据
+        function initGroups() {
+            const userId = document.getElementById('userId') ? document.getElementById('userId').value : null;
+            fetch('/get_groups/')
+                .then(response => response.json())
+                .then(data => {
+                    allGroups = data;
+
+                    // 如果是编辑用户，加载用户的初始用户组
+                    if (userId !== 'None') {
+                        fetch(`/get_user_groups/${userId}/`)
+                           .then(response => response.json())
+                           .then(userGroups => {
+                                selectedGroups = userGroups;
+                                renderGroups();
+                                renderSelectedGroups();
+                                updateSelectionCount();
+                                updateGroupsInput();
+                            })
+                           .catch(error => {console.error('加载用户组失败:', error)});
+                    }else {
+                        selectedGroups = [];
+                        renderGroups();
+                        renderSelectedGroups();
+                        updateSelectionCount();
+                        updateGroupsInput();
+                    }
+                })
+                .catch(error => console.error('加载用户组失败:', error));
+        }
+
+        // 初始化用户组列表
+        function renderGroups(searchTerm = '') {
+            const container = document.getElementById('groupsContainer');
+            container.innerHTML = '';
+
+            // 过滤用户组
+            const filteredGroups = allGroups.filter(group =>
+                group.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            if (filteredGroups.length === 0) {
+                container.innerHTML = `<div class="no-results">...</div>`;
+                return;
+            }
+
+            // 渲染用户组列表
+            filteredGroups.forEach(group => {
+                const isSelected = selectedGroups.some(g => g.id === group.id);
+                const groupElement = document.createElement('div');
+                groupElement.className = `group-item ${isSelected ? 'selected' : ''}`;
+                groupElement.dataset.id = group.id;
+                groupElement.innerHTML = `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                            id="group-${group.id}" ${isSelected ? 'checked' : ''}>
+                        <label class="form-check-label" for="group-${group.id}">
+                            ${group.name}
+                        </label>
+                    </div>
+                    <span class="badge rounded-pill bg-primary">${group.memberCount} 成员</span>
+                `;
+
+                const checkbox = groupElement.querySelector('input');
+                checkbox.addEventListener('change', () => {
+                    handleGroupSelection(group, checkbox.checked);
+                });
+
+                container.appendChild(groupElement);
+            });
+        }
+
+        // 渲染已选择的用户组
+        function renderSelectedGroups() {
+            const container = document.getElementById('selectedGroupsContainer');
+            container.innerHTML = '';
+
+            if (selectedGroups.length === 0) return;
+
+            selectedGroups.forEach(group => {
+                const badge = document.createElement('div');
+                badge.className = 'selected-groups-badge d-inline-flex align-items-center';
+                badge.innerHTML = `
+                    ${group.name}
+                    <button type="button" class="btn-close btn-close-sm ms-2" data-group-id="${group.id}" aria-label="Remove"></button>
+                `;
+                container.appendChild(badge);
+
+                // 添加删除事件
+                const closeBtn = badge.querySelector('.btn-close');
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleGroupSelection(group, false);
+                });
+            });
+        }
+
+        // 处理用户组选择
+        function handleGroupSelection(group, isSelected) {
+            if (isSelected) {
+                // 添加到已选组
+                if (!selectedGroups.some(g => g.id === group.id)) {
+                    selectedGroups.push(group);
+                }
+            } else {
+                // 从已选组中移除
+                selectedGroups = selectedGroups.filter(g => g.id !== group.id);
+            }
+
+            // 更新UI
+            renderSelectedGroups();
+            renderGroups(document.getElementById('groupSearch').value);
+            updateSelectionCount();
+            updateGroupsInput();
+        }
+
+        // 计数更新函数
+        function updateSelectionCount() {
+          document.getElementById('selectedCount').textContent = selectedGroups.length.toString();
+        }
+
+        // 更新隐藏字段的值
+        function updateGroupsInput() {
+            const groupIds = selectedGroups.map(group => parseInt(group.id));
+            document.getElementById('selectedGroupsInput').value = JSON.stringify(groupIds);
+            console.log("更新隐藏字段:", JSON.stringify(groupIds));
+        }
+
+        // 搜索功能
+        document.getElementById('groupSearch').addEventListener('input', function () {
+            renderGroups(this.value);
+        });
+        // 页面加载初始化
+        document.addEventListener('DOMContentLoaded', initGroups);
+
+    </script>
+{% endblock %}

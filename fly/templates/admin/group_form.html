@@ -1,0 +1,307 @@
+{% extends "base/base.html" %}
+{% load widget_tweaks %}
+{% block style %}
+    <style>
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border: none;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 25px;
+            border: none;
+            height: 50px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .permission-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #3a7bd5;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #dee2e6;
+        }
+
+        .permission-search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .permission-search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 10;
+        }
+
+        .permission-search-input {
+            padding-left: 40px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+        }
+
+        .permission-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 5px;
+            background-color: white;
+        }
+
+        .permission-item {
+            padding: 2px 15px;
+            border-radius: 6px;
+            {#margin-bottom: 8px;#}
+            transition: all 0.2s;
+            {#border: 1px solid #e9ecef;#}
+            display: flex;
+            align-items: center;
+        }
+
+        .permission-item:hover {
+            background-color: #e9f7fe;
+            border-color: #b8e2fb;
+            cursor: pointer;
+        }
+
+        .permission-item.selected {
+            background-color: #d1ecff;
+            border-color: #86c6f8;
+        }
+
+        .permission-item .badge {
+            margin-left: auto;
+            background-color: #3a7bd5;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        /* 大尺寸 */
+        .btn-close-lg {
+            width: 2em;
+            height: 2em;
+        }
+
+        /* 小尺寸 */
+        .btn-close-sm {
+            width: 0.4em;
+            height: 0.4em;
+        }
+
+        .btn-action {
+            min-width: 100px;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+
+        .btn-delete {
+            background: linear-gradient(to right, #ff416c, #ff4b2b);
+            border: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background-color: #28a745;
+        }
+
+        .status-inactive {
+            background-color: #dc3545;
+        }
+
+        .form-check-input:checked {
+            background-color: #3a7bd5;
+            border-color: #3a7bd5;
+        }
+
+        .selected-permission-badge {
+            background-color: #e9f7fe;
+            border-radius: 20px;
+            padding: 5px 12px;
+            margin: 0 5px 0 0;
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .selected-permission-container {
+            margin-top: 10px;
+            {#min-height: 40px;#}
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{{ group_id|yesno:"编辑用户组,添加用户组" }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate autocomplete="off">
+                    {% csrf_token %}
+                    {# 显示非字段错误 #}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">组名</label>
+                        {% render_field form.name class="form-control" %}
+                        {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">权限</label>
+                        <input type="hidden" id="userId" value="{{ group_id }}" />
+                        <div class="permission-search-container">
+                            <i class="fas fa-search permission-search-icon"></i>
+                            <input type="text" class="form-control permission-search-input" id="permissionSearch" placeholder="搜索权限...">
+                        </div>
+                        <div class="permission-container" id="permissionContainer">
+                            {% regroup all_permissions by content_type.app_label as app_list %}
+
+                            {% for app in app_list %}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h5 class="panel-title text-bg-light">{{ app.grouper|title }}</h5>
+                                </div>
+                                <div class="panel-body">
+                                    {% for permission in app.list %}
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="permissions" value="{{ permission.id }}"
+                                                {% if permission.id in groups_permissions %}checked{% endif %}>
+                                            {{ permission.name }}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="selected-permission-container" id="selectedPermissionContainer">
+                                <!-- 已选权限将通过JS动态显示 -->
+                        </div>
+                        <!-- 隐藏字段用于存储选择的用户组ID -->
+                        <input type="hidden" name="selectedPermissionInput" id="selectedPermissionInput" value="{{ group_permissions|default:'' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-primary">保存</button>
+                            <a href="{% url 'groups' %}" class="btn btn-default">取消</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        $(document).ready(function() {
+            // 搜索权限
+            $("#permissionSearch").on("input", function() {
+                let searchTerm = $(this).val().toLowerCase();
+                $("#permissionContainer .checkbox label").each(function() {
+                    let labelText = $(this).text().toLowerCase();
+                    if (labelText.includes(searchTerm)) {
+                        $(this).closest(".checkbox").show();
+                    } else {
+                        $(this).closest(".checkbox").hide();
+                    }
+                });
+            });
+            // 选择权限
+            $("#permissionContainer .checkbox input").on("change", function() {
+                let checked = $(this).prop("checked");
+                let permissionId = $(this).val();
+                let permissionName = $(this).closest("label").text().trim();
+                if (checked){
+                    const badge = document.createElement('div');
+                    badge.className = 'd-inline-flex align-items-center';
+                    badge.innerHTML = `
+                        <span class="selected-permission-badge" data-id="${permissionId}">
+                            ${permissionName}
+                            <button type="button" class="btn-close btn-close-sm ms-2" aria-label="Close"></button>
+                        </span>`;
+                    $("#selectedPermissionContainer").append(badge);
+                } else {
+                    // 移除已选权限
+                    $(`#selectedPermissionContainer .selected-permission-badge[data-id="${permissionId}"]`).parent().remove();
+                }
+            });
+            // 保存权限
+            $("#savePermissions").on("click", function() {
+                let selectedPermission = [];
+                $("#selectedPermissionContainer .selected-permission-badge").each(function() {
+                    selectedPermission.push($(this).data("id"));
+                });
+                $("#selectedPermissionInput").val(selectedPermission.join(","));
+            });
+            // 取消选择
+            $("#selectedPermissionContainer").on("click", ".selected-permission-badge .btn-close", function() {
+                $(this).closest(".selected-permission-badge").remove();
+                // 取消选择权限
+                let permissionId = $(this).closest(".selected-permission-badge").data("id");
+                $("#permissionContainer .checkbox input[value='" + permissionId + "']").prop("checked", false);
+            });
+            // 初始化已选权限
+            let selectedPermission = $("#selectedPermissionInput").val().split(",");
+            for (let i = 0; i < selectedPermission.length; i++) {
+                let permissionId = parseInt(selectedPermission[i].replace(/^\[+|\]+$/g, '').trim());
+                if (isNaN(permissionId)) {
+                    continue;
+                }
+                $("#permissionContainer .checkbox").find("input[value='" + permissionId + "']").prop("checked", true);
+                let permissionName = $("#permissionContainer .checkbox input[value='" + permissionId + "']").closest("label").text().trim();
+                const badge = document.createElement('div');
+                badge.className ='d-inline-flex align-items-center';
+                badge.innerHTML = `
+                    <span class="selected-permission-badge" data-id="${permissionId}">
+                        ${permissionName}
+                        <button type="button" class="btn-close btn-close-sm ms-2" aria-label="Close"></button>
+                    </span>`;
+                $("#selectedPermissionContainer").append(badge);
+            }
+        });
+    </script>
+{% endblock %}

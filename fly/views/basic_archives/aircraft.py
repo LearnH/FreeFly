@@ -3,14 +3,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from fly.utils.bootstrap import BaseModelForm
 
 
 class AircraftForm(BaseModelForm):
     class Meta:
         model = fly_models.Aircraft
-        exclude = ('is_deleted','created_at','updated_at')
+        exclude = ('is_deleted','created_at','updated_at', 'created_by', 'updated_by')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,6 +58,7 @@ def aircraft(request):
     aircraft_type_list = fly_models.AircraftType.objects.filter(is_deleted=False)
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
+    permissions = permission_dict.get_model_permission(fly_models.Aircraft)
     context = {
         'aircraft_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -67,7 +68,7 @@ def aircraft(request):
         'aircraft_type_query': aircraft_type_query,
         'aircraft_type_list': aircraft_type_list,
     }
-
+    context.update(permissions)
     return render(request, 'basic_archives/aircraft.html', context)
 
 

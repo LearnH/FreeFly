@@ -20,6 +20,15 @@ from django.contrib.auth.views import LoginView
 from django.urls import path, include
 from django.views.generic import RedirectView
 
+# 设置标题（浏览器标签页显示）
+admin.site.site_title = "飞行"
+
+# 设置顶部大标题（登录页和首页显示）
+admin.site.site_header = "飞行时间记录系统管理后台"
+
+# 设置首页副标题（模型列表上方）
+admin.site.index_title = "系统管理面板"
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),

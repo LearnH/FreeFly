@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from fly.utils.bootstrap import BaseModelForm
 
 
@@ -69,6 +69,7 @@ def employee(request):
     status_choices = fly_models.Employee.status_choices
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
+    permissions = permission_dict.get_model_permission(fly_models.Employee)
     context = {
         'employee_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -77,7 +78,7 @@ def employee(request):
         'status_query': status_query,
         'emp_code_query': emp_code_query,
     }
-
+    context.update(permissions)
     return render(request, 'employee.html', context)
 
 

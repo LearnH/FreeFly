@@ -1,0 +1,32 @@
+{% extends "base/base_list.html" %}
+{% block title %} 组管理 {% endblock %}
+
+{% block search_label %} 关键字 {% endblock %}
+{% block search_select %}{% endblock %}
+
+{% block add_url %}{% url 'groups_add' %}{% endblock %}
+{% block edit_btn %}{% endblock %}
+{% block delete_btn %}{% endblock %}
+
+{% block table_headers %}
+    <th>组名</th>
+    <th>用户数</th>
+    <th>操作</th>
+{% endblock %}
+{% block table_body %}
+    {% for group in groups %}
+        <tr onclick="selectRow(this)">
+            <td class="fixed-col">{{ forloop.counter }}</td>
+            <td class="fixed-col">
+                <input type="radio" name="selectedAirport" value="{{ employee.id }}" onclick="event.stopPropagation()">
+            </td>
+            <td>{{ group.name }}</td>
+            <td>{{ group.user_set.count }}</td>
+            <td>
+                <a href="{% url 'groups_permissions' group.id %}" class="btn btn-sm btn-warning-subtle">权限</a>
+                <a href="{% url 'groups_edit' group.id %}" class="btn btn-sm btn-primary-subtle"><i class="fa-solid fa-pen-to-square "></i></a>
+                <a href="{% url 'groups_delete' group.id %}" class="btn btn-sm btn-danger-subtle " onclick="return confirm('确定要删除此用户组吗?')"><i class="fa-solid fa-trash "></i></a>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}    

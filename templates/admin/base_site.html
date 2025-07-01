@@ -1,0 +1,73 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        {{ site_header|default:_('Django administration') }}
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{# 自定义 "查看站点" 链接 #}
+{% block usertools %}
+{% if has_permission %}
+<div id="user-tools">
+    {% block welcome-msg %}
+        {{ _('欢迎,') }}
+        <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+    {% endblock %}
+    {% block userlinks %}
+        {% if site_url %}
+            <a href="/auth_dashboard/" target="_blank" class="view-site-link">
+                {{ _('返回主网站') }}
+            </a>
+        {% endif %}
+        {% if user.is_active and user.is_staff %}
+            {% url 'django-admindocs-docroot' as docsroot %}
+            {% if docsroot %}
+                <a href="{{ docsroot }}">{{ _('文档') }}</a>
+            {% endif %}
+        {% endif %}
+        {% if user.has_usable_password %}
+            <a href="{% url 'admin:password_change' %}" target="_blank" class="view-site-link">{{ _('修改密码') }}</a>
+        {% endif %}
+        <a href="{{ site_url }}">{{ _('退出') }}</a>
+    {% endblock %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extrahead %}
+<style>
+    .view-site-link {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 5px 12px;
+        border-radius: 4px;
+        margin-right: 10px;
+        transition: all 0.3s;
+    }
+
+    .view-site-link:hover {
+        background: rgba(255, 255, 255, 0.2);
+        text-decoration: none;
+    }
+
+    #user-tools {
+        font-size: 13px;
+    }
+
+    #user-tools a {
+        color: #e0e0ff;
+        border-bottom: 1px dotted rgba(224, 224, 255, 0.5);
+    }
+
+    #user-tools a:hover {
+        color: #fff;
+        border-bottom: 1px solid #fff;
+    }
+</style>
+{% endblock %}

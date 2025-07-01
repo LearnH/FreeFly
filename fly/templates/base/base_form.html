@@ -1,6 +1,30 @@
 {% extends 'base/base.html' %}
 {% load widget_tweaks %}
+{% block style %}
+    <style>
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border: none;
+        }
 
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 25px;
+            border: none;
+            height: 50px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+    </style>
+{% endblock %}
 {% block content %}
     <div class="container mt-4">
         <div class="card">
@@ -8,7 +32,7 @@
                 <h5>{% if form.instance.id %}编辑{% else %}添加{% endif %}{{ theme }}</h5>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data" novalidate>
+                <form method="post" enctype="multipart/form-data" novalidate autocomplete="off">
                     {% csrf_token %}
 
                     {# 非字段错误 #}

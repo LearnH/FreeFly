@@ -27,9 +27,9 @@
     <th scope="col">机型</th>
     <th scope="col">引进日期</th>
     <th scope="col">设备类型</th>
-    <th scope="col">状态</th>
     <th scope="col">所属公司</th>
     <th scope="col">所在基地</th>
+    <th scope="col">状态</th>
     <th scope="col">描述</th>
 {% endblock %}
 
@@ -46,8 +46,8 @@
             <td>{{ aircraft.get_device_type_display|default_if_none:"" }}</td>
             <td>{{ aircraft.company|default_if_none:"" }}</td>
             <td>{{ aircraft.ope_base|default_if_none:"" }}</td>
-            <td>{{ aircraft.description|default_if_none:"" }}</td>
             <td>{{ aircraft.get_status_display }}</td>
+            <td>{{ aircraft.description|default_if_none:"" }}</td>
         </tr>
     {% endfor %}
 {% endblock %}

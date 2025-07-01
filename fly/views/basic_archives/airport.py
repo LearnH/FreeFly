@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from django import forms
 from fly.utils.bootstrap import BaseModelForm
 
@@ -45,6 +45,7 @@ def airport(request):
     status_choices = fly_models.Airport.status_choices
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
+    permissions = permission_dict.get_model_permission(fly_models.Airport)
     context = {
         'airport_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -53,7 +54,8 @@ def airport(request):
         'status_query': status_query,
         'icao_query': icao_query,
     }
-
+    # 将权限字典合并到上下文中
+    context.update(permissions)
     return render(request, 'basic_archives/airport.html', context)
 
 

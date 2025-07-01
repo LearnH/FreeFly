@@ -22,7 +22,52 @@
         </a>
     </li>
 
+    <!-- 系统管理 - 分级菜单 -->
+    {% if perms.fly.view_users or perms.fly.view_groups or perms.fly.view_dashboard  %}
+    <li class="nav-item">
+        <a class="nav-link text-dark collapsed" data-bs-toggle="collapse" href="#systemCollapse"
+           aria-expanded="{% if '/users/' in active_menu or '/groups/' in active_menu or '/auth_dashboard/' in active_menu %}true{% else %}false{% endif %}"
+           aria-controls="systemCollapse">
+            <i class="fas fa-cogs"></i>
+            <span class="nav-link-text">系统管理</span>
+            <i class="fas fa-chevron-down float-end mt-1"></i>
+        </a>
+        <div class="collapse {% if '/users/' in active_menu or '/groups/' in active_menu or '/auth_dashboard/' in active_menu %}show{% endif %}"
+             id="systemCollapse">
+            <ul class="nav flex-column ps-4">
+                {% if perms.fly.view_dashboard %}
+                <li class="nav-item">
+                    <a href="{% url 'auth_dashboard' %}"
+                       class="nav-link text-dark {% if '/auth_dashboard/' in active_menu %}active{% endif %}">
+                        <i class="fa-solid fa-list-check "></i>
+                        <span class="nav-link-text">控制面板</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% if perms.fly.view_users %}
+                <li class="nav-item">
+                    <a href="{% url 'users' %}"
+                       class="nav-link text-dark {% if '/users/' in active_menu %}active{% endif %}">
+                        <i class="fa-solid fa-user "></i>
+                        <span class="nav-link-text">用户管理</span>
+                    </a>
+                </li>
+                {% endif %}
+                {% if perms.fly.view_groups %}
+                <li class="nav-item">
+                    <a href="{% url 'groups' %}"
+                       class="nav-link text-dark {% if '/groups/' in active_menu %}active{% endif %}">
+                        <i class="fa-solid fa-user-gear "></i>
+                        <span class="nav-link-text">组管理</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </li>
+    {% endif %}
     <!-- 单位组织 - 分级菜单 -->
+    {% if perms.fly.view_company or perms.fly.view_department or perms.fly.view_position  %}
     <li class="nav-item">
         <a class="nav-link text-dark collapsed" data-bs-toggle="collapse" href="#organizationCollapse"
            aria-expanded="{% if '/company/' in active_menu or '/department/' in active_menu or '/position/' in active_menu %}true{% else %}false{% endif %}"
@@ -31,8 +76,10 @@
             <span class="nav-link-text">单位组织</span>
             <i class="fas fa-chevron-down float-end mt-1"></i>
         </a>
-        <div class="collapse {% if '/company/' in active_menu or '/department/' in active_menu or '/position/' in active_menu %}show{% endif %}" id="organizationCollapse">
+        <div class="collapse {% if '/company/' in active_menu or '/department/' in active_menu or '/position/' in active_menu %}show{% endif %}"
+             id="organizationCollapse">
             <ul class="nav flex-column ps-4">
+                {% if perms.fly.view_company %}
                 <li class="nav-item">
                     <a href="{% url 'company' %}"
                        class="nav-link text-dark {% if '/company/' in active_menu %}active{% endif %}">
@@ -40,6 +87,8 @@
                         <span class="nav-link-text">公司管理</span>
                     </a>
                 </li>
+                {% endif %}
+                {% if perms.fly.view_department %}
                 <li class="nav-item">
                     <a href="{% url 'department' %}"
                        class="nav-link text-dark {% if '/department/' in active_menu %}active{% endif %}">
@@ -47,6 +96,8 @@
                         <span class="nav-link-text">部门管理</span>
                     </a>
                 </li>
+                {% endif %}
+                {% if perms.fly.view_position %}
                 <li class="nav-item">
                     <a href="{% url 'position' %}"
                        class="nav-link text-dark {% if '/position/' in active_menu %}active{% endif %}">
@@ -54,60 +105,82 @@
                         <span class="nav-link-text">岗位管理</span>
                     </a>
                 </li>
+                {% endif %}
             </ul>
         </div>
     </li>
-
+    {% endif %}
+    {% if perms.fly.view_operatingbase %}
     <li class="nav-item">
-        <a href="{% url 'operating_base' %}" class="nav-link text-dark {% if active_menu|startswith:'/operating_base/' %}active{% endif %}">
+        <a href="{% url 'operating_base' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/operating_base/' %}active{% endif %}">
             <i class="fa-solid fa-earth-europe "></i>
             <span class="nav-link-text">基地管理</span>
         </a>
     </li>
+    {% endif %}
+    {% if perms.fly.view_airport %}
     <li class="nav-item">
-        <a href="{% url 'airport' %}" class="nav-link text-dark {% if active_menu|startswith:'/airport/' %}active{% endif %}">
-            <i class="fa-brands fa-fantasy-flight-games "></i>
+        <a href="{% url 'airport' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/airport/' %}active{% endif %}">
+            <i class="fa-solid fa-campground "></i>
             <span class="nav-link-text">机场管理</span>
         </a>
     </li>
+    {% endif %}
+    {% if perms.fly.view_aircrafttype %}
     <li class="nav-item">
-        <a href="{% url 'aircraft_type' %}" class="nav-link text-dark {% if active_menu|startswith:'/aircraft_type/' %}active{% endif %}">
-            <i class="fa-brands fa-fantasy-flight-games "></i>
+        <a href="{% url 'aircraft_type' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/aircraft_type/' %}active{% endif %}">
+            <i class="fa-regular fa-paper-plane "></i>
             <span class="nav-link-text">机型管理</span>
         </a>
     </li>
+    {% endif %}
+    {% if perms.fly.view_aircraft %}
     <li class="nav-item">
-        <a href="{% url 'aircraft' %}" class="nav-link text-dark {% if active_menu|startswith:'/aircraft/' %}active{% endif %}">
-            <i class="fa-brands fa-fantasy-flight-games "></i>
-            <span class="nav-link-text">航空器管理</span>
+        <a href="{% url 'aircraft' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/aircraft/' %}active{% endif %}">
+            <i class="fa-solid fa-paper-plane "></i>
+            <span class="nav-link-text">飞机管理</span>
         </a>
     </li>
-
+    {% endif %}
+    {% if perms.fly.view_flightcourse %}
     <li class="nav-item">
-        <a href="{% url 'flight_course' %}" class="nav-link text-dark {% if active_menu|startswith:'/flight_course/' %}active{% endif %}">
-            <i class="fa-brands fa-fantasy-flight-games "></i>
+        <a href="{% url 'flight_course' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/flight_course/' %}active{% endif %}">
+            <i class="fa-solid fa-book-open-reader "></i>
             <span class="nav-link-text">课程管理</span>
         </a>
     </li>
-
+    {% endif %}
+    {% if perms.fly.view_employee %}
     <li class="nav-item">
-        <a href="{% url 'employee' %}" class="nav-link text-dark {% if active_menu|startswith:'/employee/' %}active{% endif %}">
+        <a href="{% url 'employee' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/employee/' %}active{% endif %}">
             <i class="fa-solid fa-user-tie "></i>
             <span class="nav-link-text">员工管理</span>
         </a>
     </li>
+    {% endif %}
+    {% if perms.fly.view_student %}
     <li class="nav-item">
-        <a href="{% url 'student' %}" class="nav-link text-dark {% if active_menu|startswith:'/student/' %}active{% endif %}">
-            <i class="fa-solid fa-user-tie "></i>
+        <a href="{% url 'student' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/student/' %}active{% endif %}">
+            <i class="fa-solid fa-user-graduate "></i>
             <span class="nav-link-text">学员管理</span>
         </a>
     </li>
-
+    {% endif %}
+    {% if perms.fly.view_flightrecord %}
     <li class="nav-item">
-        <a href="{% url 'flight_record' %}" class="nav-link text-dark {% if active_menu|startswith:'/flight_record/' %}active{% endif %}">
-            <i class="fa-solid fa-user-tie "></i>
-            <span class="nav-link-text">飞行时间记录</span>
+        <a href="{% url 'flight_record' %}"
+           class="nav-link text-dark {% if active_menu|startswith:'/flight_record/' %}active{% endif %}">
+            <i class="fa-solid fa-stopwatch "></i>
+            <span class="nav-link-text">飞行记录</span>
         </a>
     </li>
+    {% endif %}
     <!-- 更多菜单项... -->
 </ul>

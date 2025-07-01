@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from fly.utils.bootstrap import BaseModelForm
 
 class FlightRecordForm(BaseModelForm):
@@ -68,7 +68,7 @@ class FlightRecordForm(BaseModelForm):
         return cleaned_data
 
 @login_required
-@permission_required('fly.view_flight_record', raise_exception=True)
+@permission_required('fly.view_flightrecord', raise_exception=True)
 def flight_record(request):
     data_dict = {'is_deleted': False}
     key_query = request.GET.get('searchKey', '').strip()
@@ -97,6 +97,7 @@ def flight_record(request):
     task_pilot_list = fly_models.Employee.objects.filter(is_deleted=False)
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
+    permissions = permission_dict.get_model_permission(fly_models.FlightRecord)
     context = {
         'flight_record_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -108,12 +109,12 @@ def flight_record(request):
         'start_date_query': start_date_query,
         'end_date_query': end_date_query,
     }
-
+    context.update(permissions)
     return render(request, 'flight_record.html', context)
 
 
 @login_required
-@permission_required('fly.add_flight_record', raise_exception=True)
+@permission_required('fly.add_flightrecord', raise_exception=True)
 def flight_record_add(request):
     if request.method == 'POST':
         form = FlightRecordForm(request.POST, request.FILES)
@@ -139,7 +140,7 @@ def flight_record_add(request):
 
 
 @login_required
-@permission_required('fly.change_flight_record', raise_exception=True)
+@permission_required('fly.change_flightrecord', raise_exception=True)
 def flight_record_edit(request, nid):
     row_object = fly_models.FlightRecord.objects.filter(id=nid).first()
     if request.method == 'POST':
@@ -165,7 +166,7 @@ def flight_record_edit(request, nid):
 
 
 @login_required
-@permission_required('fly.delete_flight_record', raise_exception=True)
+@permission_required('fly.delete_flightrecord', raise_exception=True)
 def flight_record_delete(request, nid):
     # 获取对应ID的对象，如果不存在则返回404
     obj = get_object_or_404(fly_models.FlightRecord, id=nid)

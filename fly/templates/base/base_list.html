@@ -1,5 +1,6 @@
 {% extends 'base/base.html' %}
 {% load static %}
+{% load permission_tags %}
 
 {% block content %}
     <style>
@@ -73,16 +74,28 @@
                 <div class="card-header p-2 d-flex justify-content-between align-items-center px-4">
                     <span>操作</span>
                     <div class="btn-group btn-group-sm">
-                        <a type="button" class="btn btn-outline-primary btn-sm"
-                           href="{% block add_url %}#{% endblock %}">
-                            <i class="fa-solid fa-plus"></i> 添加
-                        </a>
-                        <a id="editBtn" type="button" class="btn btn-outline-primary btn-sm" href="#">
-                            <i class="fa-solid fa-pen-to-square"></i> 编辑
-                        </a>
-                        <a id="deleteBtn" type="button" class="btn btn-outline-primary btn-sm" href="#">
-                            <i class="fa-solid fa-trash-can"></i> 删除
-                        </a>
+                        {% block add_btn %}
+                            {% if request.user|has_permission:add %}
+                                <a type="button" class="btn btn-outline-primary btn-sm"
+                                   href="{% block add_url %}#{% endblock %}">
+                                    <i class="fa-solid fa-plus"></i> 添加
+                                </a>
+                            {% endif %}
+                        {% endblock %}
+                        {% block edit_btn %}
+                            {% if request.user|has_permission:change %}
+                                <a id="editBtn" type="button" class="btn btn-outline-primary btn-sm" href="#">
+                                    <i class="fa-solid fa-pen-to-square"></i> 编辑
+                                </a>
+                            {% endif %}
+                        {% endblock %}
+                        {% block delete_btn %}
+                            {% if request.user|has_permission:delete %}
+                                <a id="deleteBtn" type="button" class="btn btn-outline-primary btn-sm" href="#">
+                                    <i class="fa-solid fa-trash-can"></i> 删除
+                                </a>
+                            {% endif %}
+                        {% endblock %}
                     </div>
 
                     {% block ope_button %}
@@ -169,8 +182,11 @@
                 const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive);
                 toastBootstrap.show();
             } else {
+                if (confirm('确定要删除选中的数据吗？')){
                 window.location.href = '{% block delete_url %}#{% endblock %}' + selectedId + '/delete/';
+                }
             }
         });
+
     </script>
 {% endblock %}

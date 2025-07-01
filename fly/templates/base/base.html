@@ -104,7 +104,54 @@
             padding: 0;
         }
 
+        /* 颜色 */
+        .btn-primary-subtle {
+            background-color: var(--bs-primary-bg-subtle);
+            color: var(--bs-primary-text-emphasis);
+            /* border-color: var(--bs-primary-border-subtle); */
+        }
+
+        .btn-success-subtle {
+            background-color: var(--bs-success-bg-subtle);
+            color: var(--bs-success-text-emphasis);
+            /* border-color: var(--bs-success-border-subtle); */
+        }
+
+        .btn-info-subtle {
+            background-color: var(--bs-info-bg-subtle);
+            color: var(--bs-info-text-emphasis);
+            /* border-color: var(--bs-info-border-subtle); */
+        }
+
+        .btn-warning-subtle {
+            background-color: var(--bs-warning-bg-subtle);
+            color: var(--bs-warning-text-emphasis);
+            /* border-color: var(--bs-warning-border-subtle); */
+        }
+
+        .btn-danger-subtle {
+            background-color: var(--bs-danger-bg-subtle);
+            color: var(--bs-danger-text-emphasis);
+            /* border-color: var(--bs-danger-border-subtle); */
+        }
+
+        .text-primary-emphasis {
+            color: var(--bs-primary-text-emphasis);
+        }
+
+        .text-success-emphasis {
+            color: var(--bs-success-text-emphasis);
+        }
+
+        .text-info-emphasis {
+            color: var(--bs-info-text-emphasis);
+        }
+
+        .text-warning-emphasis {
+            color: var(--bs-warning-text-emphasis);
+        }
     </style>
+    {% block style %}{% endblock %}
 </head>
 
 <body>
@@ -127,7 +174,8 @@
                     <hr class="dropdown-divider">
                 </li>
                 <li>
-                    <a class="dropdown-item" href="{% url 'logout' %}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a class="dropdown-item" href="{% url 'logout' %}"
+                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <i class="fa-solid fa-power-off me-3"></i>退出
                     </a>
                     <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
@@ -188,5 +236,6 @@
         }
     });
 </script>
+{% block script %}{% endblock %}
 </body>
 </html>

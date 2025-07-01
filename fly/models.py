@@ -9,6 +9,29 @@ from simple_history.models import HistoricalRecords
 from threading import current_thread
 from fly.utils import tasks
 
+from django.contrib.auth.models import User, Group, Permission as AuthPermission
+
+class ProxyUser(User):
+    class Meta:
+        proxy = True
+        app_label = 'fly'
+        verbose_name = '用户'
+        verbose_name_plural = '用户管理'
+
+class ProxyGroup(Group):
+    class Meta:
+        proxy = True
+        app_label = 'fly'
+        verbose_name = '用户组'
+        verbose_name_plural = '用户组管理'
+
+class ProxyPermission(AuthPermission):
+    class Meta:
+        proxy = True
+        app_label = 'fly'
+        verbose_name = '权限'
+        verbose_name_plural = '权限管理'
+
 # 异步记录操作日志
 class AuditLog(models.Model):
     ACTION_CHOICES = (
@@ -390,8 +413,8 @@ class Aircraft(models.Model):
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='aircraft_updated_by' )
 
     class Mate:
-        verbose_name = '航空器'
-        verbose_name_plural = '航空器'
+        verbose_name = '飞机'
+        verbose_name_plural = '飞机'
     def __str__(self):
         return self.name
 # 飞行课程

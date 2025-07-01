@@ -21,12 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-g76e*h*$^w5k8x2*($9@di+u2koi-(v(ir3f4ljnnr!@aokody'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-# ALLOWED_HOSTS = ['182.92.132.219', 'localhost', '127.0.0.1']
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -59,7 +53,7 @@ ROOT_URLCONF = 'FreeFly.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -73,20 +67,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'FreeFly.wsgi.application'
-
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'free_fly',
-        'USER': 'root',
-        'PASSWORD': '123456',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -150,3 +130,8 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+try:
+    from .local_settings import *  # 导入本地配置
+except ImportError:
+    pass  # 如果不存在 local_settings.py，忽略

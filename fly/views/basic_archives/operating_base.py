@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from django import forms
 from fly.utils.bootstrap import BaseModelForm
 
@@ -31,7 +31,7 @@ class OperatingBaseForm(BaseModelForm):
         self.fields['status'].initial = 1
 
 @login_required
-@permission_required('fly.view_operating_base', raise_exception=True)
+@permission_required('fly.view_operatingbase', raise_exception=True)
 def operating_base(request):
     # 获取查询参数
     data_dict = {'is_deleted': False}
@@ -49,7 +49,7 @@ def operating_base(request):
 
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
-
+    permissions = permission_dict.get_model_permission(fly_models.OperatingBase)
     context = {
         'ope_base_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -57,11 +57,11 @@ def operating_base(request):
         'key_query': key_query,
         'status_query': status_query,
     }
-
+    context.update(permissions)
     return render(request, 'basic_archives/operating_base.html', context)
 
 @login_required
-@permission_required('fly.add_operating_base', raise_exception=True)
+@permission_required('fly.add_operatingbase', raise_exception=True)
 def operating_base_add(request):
     if request.method == 'POST':
         form = OperatingBaseForm(request.POST)
@@ -85,7 +85,7 @@ def operating_base_add(request):
     return render(request, 'base/base_form.html', context)
 
 @login_required
-@permission_required('fly.change_operating_base', raise_exception=True)
+@permission_required('fly.change_operatingbase', raise_exception=True)
 def operating_base_edit(request, nid):
     row_object = fly_models.OperatingBase.objects.filter(id=nid).first()
     if request.method == 'POST':

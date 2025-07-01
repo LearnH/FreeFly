@@ -3,14 +3,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from fly.utils.bootstrap import BaseModelForm
 
 
 class AircraftTypeForm(BaseModelForm):
     class Meta:
         model = fly_models.AircraftType
-        exclude = ('is_deleted','created_at','updated_at')
+        exclude = ('is_deleted','created_at','updated_at', 'created_by', 'updated_by')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,7 +28,7 @@ class AircraftTypeForm(BaseModelForm):
 
 
 @login_required
-@permission_required('fly.view_aircraft_type', raise_exception=True)
+@permission_required('fly.view_aircrafttype', raise_exception=True)
 def aircraft_type(request):
     data_dict = {'is_deleted': False}
     key_query = request.GET.get('searchKey', '').strip()
@@ -43,6 +43,7 @@ def aircraft_type(request):
     status_choices = fly_models.AircraftType.status_choices
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
+    permissions = permission_dict.get_model_permission(fly_models.AircraftType)
     context = {
         'aircraft_type_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -50,12 +51,12 @@ def aircraft_type(request):
         'key_query': key_query,
         'status_query': status_query,
     }
-
+    context.update(permissions)
     return render(request, 'basic_archives/aircraft_type.html', context)
 
 
 @login_required
-@permission_required('fly.add_aircraft_type', raise_exception=True)
+@permission_required('fly.add_aircrafttype', raise_exception=True)
 def aircraft_type_add(request):
     if request.method == 'POST':
         form = AircraftTypeForm(request.POST)
@@ -79,7 +80,7 @@ def aircraft_type_add(request):
 
 
 @login_required
-@permission_required('fly.change_aircraft_type', raise_exception=True)
+@permission_required('fly.change_aircrafttype', raise_exception=True)
 def aircraft_type_edit(request, nid):
     row_object = fly_models.AircraftType.objects.filter(id=nid).first()
     if request.method == 'POST':

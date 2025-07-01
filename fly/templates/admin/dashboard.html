@@ -1,0 +1,241 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title text-muted">用户总数</h5>
+                        <h2 class="card-text text-primary-emphasis">{{ user_count }}</h2>
+                    </div>
+                    <div class="stat-card-icon text-primary-emphasis">
+                        <i class="fa-solid fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ user_list_url }}" class="btn btn-primary-subtle btn-sm w-100 action-button" >
+                    管理用户 <i class="fa-solid fa-arrow-right "></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title text-muted">用户组</h5>
+                        <h2 class="card-text text-success-emphasis">{{ group_count }}</h2>
+                    </div>
+                    <div class="stat-card-icon text-success-emphasis">
+                        <i class="fa-solid fa-layer-group fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ group_list_url }}" class="btn btn-success-subtle btn-sm w-100 action-button">
+                    管理用户组 <i class="fa-solid fa-arrow-right "></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title text-muted ">权限数量</h5>
+                        <h2 class="card-text text-info-emphasis">{{ permission_count }}</h2>
+                    </div>
+                    <div class="stat-card-icon text-info-emphasis">
+                        <i class="fa-solid fa-anchor fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'admin:fly_proxypermission_changelist' %}" class="btn btn-info-subtle btn-sm w-100 action-button">
+                    查看权限 <i class="fa-solid fa-arrow-right "></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="stat-card card card-staff h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title text-muted">管理员</h5>
+                        <h2 class="card-text text-warning-emphasis">{{ staff_count }}</h2>
+                    </div>
+                    <div class="stat-card-icon text-warning-emphasis">
+                        <i class="fa-solid fa-user-shield fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ user_list_url }}?is_staff__exact=1" class="btn btn-warning-subtle btn-sm w-100 action-button">
+                    查看管理员 <i class="fa-solid fa-arrow-right "></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="bi bi-speedometer2 me-2"></i>快速操作</h3>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary-subtle">
+                    <i class="bi bi-person-plus me-2"></i>用户管理
+                </div>
+                <div class="card-body">
+                    <p class="card-text">创建、编辑和管理系统用户账户。</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ add_user_url }}" class="btn btn-outline-primary">
+                            <i class="bi bi-plus-circle me-1"></i> 添加新用户
+                        </a>
+                        <a href="{{ user_list_url }}" class="btn btn-outline-primary">
+                            <i class="bi bi-list me-1"></i> 查看所有用户
+                        </a>
+                        <a href="{{ user_list_url }}?is_active__exact=0" class="btn btn-outline-primary">
+                            <i class="bi bi-person-x me-1"></i> 查看禁用用户
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success-subtle">
+                    <i class="bi bi-collection me-2"></i>用户组管理
+                </div>
+                <div class="card-body">
+                    <p class="card-text">创建和管理用户组，分配权限给用户组。</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ add_group_url }}" class="btn btn-outline-success">
+                            <i class="bi bi-plus-circle me-1"></i> 添加新用户组
+                        </a>
+                        <a href="{{ group_list_url }}" class="btn btn-outline-success">
+                            <i class="bi bi-list me-1"></i> 查看所有用户组
+                        </a>
+                        <a href="{% url 'admin:fly_proxypermission_changelist' %}" class="btn btn-outline-success">
+                            <i class="bi bi-shield-check me-1"></i> 管理权限
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-section">
+    <h3 class="mb-4"><i class="bi bi-graph-up me-2"></i>用户统计</h3>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-pie-chart me-2"></i>用户状态分布
+                </div>
+                <div class="card-body d-flex justify-content-center chart-container">
+                    <canvas id="userStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-bar-chart me-2"></i>用户创建趋势
+                </div>
+                <div class="card-body">
+                    <canvas id="userCreationChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static '/js/chart.js' %}"></script>
+<script>
+    // 用户状态饼图
+    const statusCtx = document.getElementById('userStatusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'pie',
+        data: {
+            labels: ['活跃用户', '禁用用户', '管理员', '超级用户'],
+            datasets: [{
+                data: [{{ active_count }}, {{ inactive_count }}, {{ staff_count }}, {{ superuser_count }}],
+                backgroundColor: [
+                    '#66CDAA',
+                    '#FF6347',
+                    '#87CEEB',
+                    '#9370DB'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                title: {
+                    display: true,
+                    text: '用户状态分布'
+                }
+            }
+        }
+    });
+
+    // 用户创建趋势图
+    const creationCtx = document.getElementById('userCreationChart').getContext('2d');
+    const creationChart = new Chart(creationCtx, {
+        type: 'line',
+        data: {
+            labels: {{ creation_dates|safe }},
+            datasets: [{
+                label: '用户创建数量',
+                data: {{ creation_counts|safe }},
+                fill: false,
+                borderColor: '#2196f3',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: '最近30天用户创建趋势'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+<style>
+    .chart-container {
+        height: 578px;
+        position: relative;
+    }
+</style>
+{% endblock %}

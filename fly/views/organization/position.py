@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from django import forms
 from fly.utils.bootstrap import BaseModelForm
 
@@ -54,6 +54,7 @@ def position(request):
     department_list = fly_models.Department.objects.filter(is_deleted=False)
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
+    permissions = permission_dict.get_model_permission(fly_models.Position)
     context = {
         'position_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -63,7 +64,7 @@ def position(request):
         'department_query': department_query,
         'department_list': department_list,
     }
-
+    context.update(permissions)
     return render(request, 'organization/position.html', context)
 
 

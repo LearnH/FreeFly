@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
 
 from fly import models as fly_models
-from fly.utils import pagination
+from fly.utils import pagination, permission_dict
 from fly.utils.bootstrap import BaseModelForm
 
 
@@ -46,6 +46,7 @@ def company(request):
     status_choices = fly_models.Company.status_choices
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
+    permissions = permission_dict.get_model_permission(fly_models.Company)
     context = {
         'company_list': page_obj.page_queryset,
         'page_string': page_obj.page_html(),
@@ -54,7 +55,8 @@ def company(request):
         'status_query': status_query,
         'name_en_query': name_en_query,
     }
-
+    # 将权限字典合并到上下文中
+    context.update(permissions)
     return render(request, 'organization/company.html', context)
 
 
