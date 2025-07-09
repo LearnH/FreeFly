@@ -9,7 +9,7 @@
                 <h5>{% if form.instance.id %}编辑{% else %}添加{% endif %}{{ theme }}</h5>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data" novalidate>
+                <form method="post" enctype="multipart/form-data" novalidate autocomplete="off">
                     {% csrf_token %}
 
                     {# 非字段错误 #}
@@ -34,7 +34,7 @@
                             {# 单选框 #}
                         {% elif field.field.widget.input_type == 'radio' %}
                             <div class="mb-3">
-                                <label class="form-label">
+                                <label class="form-label fs-6">
                                     {{ field.label }}
                                 </label>
                                 <div class="d-flex gap-3">
@@ -177,7 +177,11 @@
                                     {{ field.label }}
                                     {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
                                 </label>
-                                {{ field }}
+                                {% if field.name in select_fields %}
+                                    {{ field|add_class:"select2-field"|attr:"data-placeholder:请选择或搜索"}}
+                                {% else %}
+                                    {{ field}}
+                                {% endif %}
                                 {% if field.errors %}
                                     <div class="text-danger">
                                         {% for error in field.errors %}
@@ -199,6 +203,14 @@
 
 {% block extra_js %}
     <script>
+        // 初始化 Select2
+        $(document).ready(function () {
+            $('.select2-field').select2({
+                placeholder: '选择或搜索',
+                allowClear: true,
+                width: '100%',
+            });
+        });
         document.addEventListener('DOMContentLoaded', function () {
             // 初始化日期选择器
             document.querySelectorAll('[data-td-target-input="nearest"]').forEach(function (el) {
@@ -407,6 +419,33 @@
         .image-preview-container img {
             max-width: 100%;
             height: auto;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border: none;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 25px;
+            border: none;
+            height: 50px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        /* 优化Select2样式 */
+        .select2-container .select2-selection--single {
+            height: 35px!important;
         }
     </style>
 {% endblock %}

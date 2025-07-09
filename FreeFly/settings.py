@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'fly.apps.FlyappConfig',
     'widget_tweaks',
-    'simple_history',          # 审计日志插件
+    'simple_history',
 ]
 
 MIDDLEWARE = [
@@ -44,6 +44,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',  # 启用gzip压缩
     'fly.utils.middleware.RequestContextMiddleware',  # 自定义中间件
     'simple_history.middleware.HistoryRequestMiddleware',  # 审计日志插件
 ]
@@ -54,7 +55,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
+        # 'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
@@ -62,6 +63,12 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'fly.utils.context_processors.menu_processor',
             ],
+            'loaders': [
+                ('django.template.loaders.cached.Loader',[
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader',
+                ])
+            ]
         },
     },
 ]
@@ -130,6 +137,8 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 try:
     from .local_settings import *  # 导入本地配置

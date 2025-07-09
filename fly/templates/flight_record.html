@@ -1,30 +1,58 @@
 {% extends 'base/base_list.html' %}
-
+{% load flight_filters %}
 {% block title %} 飞行记录管理 {% endblock %}
-{% block search_label %} 备注 {% endblock %}
+{% block search_input %} {% endblock %}
 {% block select_label %} 飞行种类 {% endblock %}
 {% block search2 %}
     <div class="input-group input-group-sm" style="width: 250px;">
         <span class="input-group-text">任务飞行员</span>
-        <select class="form-select" name="searchTaskPilot">
-            <option value="">全部</option>
-            {% for obj in task_pilot_list %}
+        <div class="select2-container--default" >
+            <select class="form-select select2" name="searchTaskPilot" data-placeholder="选择或搜索">
+                <option value=""></option>
+                {% for obj in task_pilot_list %}
+                    <option value="{{ obj.id }}"
+                            {% if obj.id|stringformat:'s' == task_pilot_query|stringformat:'s' %}selected{% endif %}>
+                        {{ obj.name  }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">飞行学员</span>
+        <div class="select2-container--default">
+            <select class="form-select select2" name="searchPilotStudent" data-placeholder="选择或搜索飞行学员">
+                <option value=""></option>
+                {% for obj in pilot_student_list %}
+                    <option value="{{ obj.id }}"
+                            data-type="{{ obj.person_type }}"  {# 区分学员 or 员工 #}
+                            {% if obj.id|stringformat:'s' == pilot_student_query|stringformat:'s' %}selected{% endif %}>
+                        {{ obj.name  }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <!-- 现代化日期范围选择 -->
+    <div class="input-group input-group-sm" style="width: 300px;">
+        <span class="input-group-text">日期范围</span>
+        <input type="text" class="form-control" id="dateRangePicker" name="dateRange"
+               placeholder="选择日期范围" autocomplete="off"
+               value="{% if start_date_query %}{{ start_date_query }} - {{ end_date_query }}{% endif %}">
+        <input type="hidden" id="startDate" name="startDate" value="{{ start_date_query }}">
+        <input type="hidden" id="endDate" name="endDate" value="{{ end_date_query }}">
+    </div>
+    <div class="input-group input-group-sm" style="width: 250px;">
+        <span class="input-group-text">飞行基地</span>
+        <select class="form-select" name="searchOpeBase">
+            <option value=""></option>
+            {% for obj in ope_base_list %}
                 <option value="{{ obj.id }}"
-                        {% if obj.id|stringformat:'s' == task_pilot_query|stringformat:'s' %}selected{% endif %}>
+                        {% if obj.id|stringformat:'s' == ope_base_query|stringformat:'s' %}selected{% endif %}>
                     {{ obj.name  }}
                 </option>
             {% endfor %}
         </select>
-    </div>
-    <div class="form-group d-flex">
-        <label for="startDate" class="mr-2">开始</label>
-        <input type="date" class="form-control" id="startDate" name="startDate"
-               value="{{ start_date_query }}">
-    </div>
-    <div class="form-group d-flex">
-        <label for="endDate" class="mr-2">结束</label>
-        <input type="date" class="form-control" id="endDate" name="endDate"
-               value="{{ end_date_query }}">
     </div>
 {% endblock %}
 
@@ -51,6 +79,8 @@
     <th scope="col">飞行性质</th>
     <th scope="col">昼夜性质</th>
     <th scope="col">飞行种类</th>
+    <th scope="col">结论</th>
+    <th scope="col">备注</th>
 {% endblock %}
 
 {% block table_body %}
@@ -66,11 +96,11 @@
             <td>{{ flight_record.aircraft|default_if_none:"" }}</td>
             <td>{{ flight_record.departure_airport|default_if_none:"" }}</td>
             <td>{{ flight_record.arrival_airport|default_if_none:"" }}</td>
-            <td>{{ flight_record.open_time|default_if_none:"" }}</td>
-            <td>{{ flight_record.take_off_time|default_if_none:"" }}</td>
+            <td>{{ flight_record.open_time|default_if_none:""|time:"H:i" }}</td>
+            <td>{{ flight_record.take_off_time|default_if_none:""|time:"H:i" }}</td>
             <td>{{ flight_record.landing_time|default_if_none:"" }}</td>
             <td>{{ flight_record.close_time|default_if_none:"" }}</td>
-            <td>{{ flight_record.flight_duration_display|default_if_none:"" }}</td>
+            <td class="flight-duration" data-duration="{{ flight_record.flight_duration|default:0 }}">{{ flight_record.flight_duration_display|default_if_none:"" }}</td>
             <td>{{ flight_record.flight_sortie|default_if_none:"" }}</td>
             <td>{{ flight_record.left_seat_person|default_if_none:"" }}</td>
             <td>{{ flight_record.right_seat_person|default_if_none:"" }}</td>
@@ -78,6 +108,170 @@
             <td>{{ flight_record.get_fly_nature_display|default_if_none:"" }}</td>
             <td>{{ flight_record.get_day_night_display|default_if_none:"" }}</td>
             <td>{{ flight_record.get_fly_category_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.get_result_display|default_if_none:"" }}</td>
+            <td>{{ flight_record.remark|default_if_none:"" }}</td>
         </tr>
     {% endfor %}
+    <!-- 合计行 -->
+    <tr class="table-primary-subtle fw-bold">
+        <td colspan="12" class="text-end">合计：</td>
+        <td id="total-duration"></td>
+        <td id="total-sortie">{{ full_queryset|sum_flight_sortie }}</td>
+        <td colspan="8"></td>
+    </tr>
 {% endblock %}
+{% block style %}
+    <style>
+        /* 优化表格样式 */
+        .table th {
+            white-space: nowrap;
+            position: relative;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+
+        /* 日期选择器样式 */
+        .modern-datepicker {
+            height: 38px;
+            border: 1px solid #dee2e6;
+            border-left: none;
+            transition: all 0.3s;
+        }
+
+        .modern-datepicker:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+        }
+
+        /* 输入组文本样式 */
+        .input-group-text {
+            transition: all 0.3s;
+        }
+
+        /* 图标样式 */
+        .bi {
+            font-size: 0.9rem;
+        }
+
+        /* 日期选择器样式 */
+        #dateRangePicker {
+            font-family: inherit;
+        }
+        /* 固定列样式 */
+        .fixed-col {
+            position: sticky;
+            left: 0;
+            background-color: white;
+            z-index: 1;
+        }
+
+    </style>
+{% endblock %}
+{% block script %}
+    <script>
+        $(document).ready(function() {
+            function formatPerson(person) {
+                if (!person.id) return person.text;
+
+                let icon = person.element.dataset.type === 'student' ?
+                    '<i class="fas fa-user-graduate text-primary-emphasis me-2"></i>' :
+                    '<i class="fas fa-user-tie text-warning-emphasis me-2"></i>';
+
+                return $('<span>').html(icon + person.text);
+            }
+            // 初始化Select2
+            $('.select2').select2({
+                width: 'resolve', // 自动调整宽度
+                dropdownAutoWidth: true, // 自动调整宽度
+                allowClear: true,
+                placeholder: function() {
+                    return $(this).data('placeholder');
+                },
+                templateResult: formatPerson,
+                escapeMarkup: function(markup) {
+                    return markup;
+                }
+            });
+
+            // 手动调整Select2容器宽度
+            function adjustSelect2Width() {
+                $('.input-group .select2-container').each(function() {
+                    var $inputGroup = $(this).closest('.input-group');
+                    var spanWidth = $inputGroup.find('.input-group-text').outerWidth();
+                    $(this).width($inputGroup.width() - spanWidth);
+                });
+            }
+
+            // 初始调整和窗口变化时调整
+            adjustSelect2Width();
+            $(window).on('resize', adjustSelect2Width);
+
+            // 初始化日期范围选择器
+            $('#dateRangePicker').daterangepicker({
+                locale: {
+                    format: 'YYYY-MM-DD',
+                    applyLabel: '确定',
+                    cancelLabel: '取消',
+                    fromLabel: '从',
+                    toLabel: '至',
+                    customRangeLabel: '自定义',
+                    daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                    firstDay: 1
+                },
+                opens: 'right',
+                autoUpdateInput: false,
+                ranges: {
+                    '今天': [moment(), moment()],
+                    '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '最近7天': [moment().subtract(6, 'days'), moment()],
+                    '最近30天': [moment().subtract(29, 'days'), moment()],
+                    '本月': [moment().startOf('month'), moment().endOf('month')],
+                    '上月': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                }
+            });
+
+            // 日期范围选择器事件处理
+            $('#dateRangePicker').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+                $('#startDate').val(picker.startDate.format('YYYY-MM-DD'));
+                $('#endDate').val(picker.endDate.format('YYYY-MM-DD'));
+            });
+
+            $('#dateRangePicker').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+                $('#startDate').val('');
+                $('#endDate').val('');
+            });
+
+            // 计算飞行时长合计
+            function calculateTotalDuration() {
+                let totalMinutes = 0;
+                $('.flight-duration').each(function() {
+                    const duration = parseFloat($(this).data('duration')) || 0;
+                    totalMinutes += duration;
+                });
+
+                // 将分钟转换为小时和分钟
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = Math.round(totalMinutes % 60);
+
+                // 格式化显示
+                let displayText = '';
+                if (hours > 0) {
+                    displayText += hours + '小时';
+                }
+                if (minutes > 0 || hours === 0) {
+                    displayText += minutes + '分钟';
+                }
+
+                $('#total-duration').text(displayText || '0分钟');
+            }
+
+            // 页面加载时计算合计
+            calculateTotalDuration();
+        });
+    </script>
+{% endblock %}
+<!-- Path: flight_record.html -->

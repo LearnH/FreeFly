@@ -419,7 +419,7 @@ class Aircraft(models.Model):
         return self.name
 # 飞行课程
 class FlightCourse(models.Model):
-    name = models.CharField(max_length=100, verbose_name='课程名称', null=False, blank=False, unique=True)
+    name = models.CharField(max_length=100, verbose_name='课程名称', unique=True)
     device_type = models.SmallIntegerField(verbose_name='设备类型', choices=Aircraft.device_type_choices, default=1)
     aircraft_nature = models.SmallIntegerField(verbose_name='机型性质', choices=AircraftType.aircraft_nature_choices, default=1)
     field_transition_choices = (
@@ -441,14 +441,16 @@ class FlightCourse(models.Model):
     )
     day_night = models.SmallIntegerField(verbose_name='昼夜性质', default=1, choices=day_night_choices)
     fly_category_choices = (
-        (1, '飞行娱乐'),
-        (2, '飞行训练'),
-        (3, '阶段检查'),
-        (4, '实践考试'),
-        (5, '任教检查'),
-        (6, '熟练检查'),
-        (7, '单飞'),
-        (8, '螺旋'),
+        (1, '飞行训练'),
+        (2, '阶段检查'),
+        (3, '实践考试'),
+        (4, '任教检查'),
+        (5, '熟练检查'),
+        (6, '定期检查'),
+        (7, '渔业飞行'),
+        (8, '飞行娱乐'),
+        (9, '单飞'),
+        (10, '螺旋'),
         (99, '其他'),
     )
     fly_category = models.SmallIntegerField(verbose_name='飞行种类', choices=fly_category_choices, default=2)
@@ -484,7 +486,8 @@ class FlightCourse(models.Model):
 class FlightRecord(models.Model):
     flight_date = models.DateField(verbose_name='飞行日期')
     task_pilot = models.ForeignKey('Employee', on_delete=models.CASCADE, related_name='task_records', verbose_name='任务飞行员')
-    flight_course = models.ForeignKey('FlightCourse', on_delete=models.CASCADE, verbose_name='飞行课程')
+    student = models.ForeignKey('Person', on_delete=models.CASCADE, related_name='student_records', verbose_name='飞行学员')
+    flight_course = models.ForeignKey('FlightCourse', on_delete=models.CASCADE, verbose_name='飞行课程', null=True, blank=True)
     field_transition_choices = (
         (1, '本场'),
         (2, '转场'),
@@ -516,7 +519,15 @@ class FlightRecord(models.Model):
     right_seat_person = models.ForeignKey('Person', on_delete=models.CASCADE, verbose_name='右座人员', related_name='right_seat_person', null=True, blank=True)
     flight_duration = models.SmallIntegerField(verbose_name='飞行时长')
     flight_sortie = models.SmallIntegerField(verbose_name='起落架次',blank=True, null=True)
+    result_choices = (
+        (1, '通过'),
+        (2, '中断'),
+        (3, '未通过'),
+    )
+    result = models.SmallIntegerField(verbose_name='结论', choices=result_choices, null=True, blank=True)
     remark = models.TextField(verbose_name='备注', null=True, blank=True)
+    ope_base = models.ForeignKey('OperatingBase', on_delete=models.CASCADE, verbose_name='飞行基地', null=True, blank=True)
+    company = models.ForeignKey('Company', on_delete=models.CASCADE, verbose_name='所属公司', null=True, blank=True)
     is_deleted = models.BooleanField(default=False, verbose_name='删除状态')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')

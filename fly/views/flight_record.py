@@ -12,17 +12,17 @@ class FlightRecordForm(BaseModelForm):
     flight_duration_display = forms.CharField(label="飞行时长", required=False)
     class Meta:
         model = fly_models.FlightRecord
-        fields = ['flight_date', 'task_pilot', 'flight_course', 'field_transition','fly_nature',
+        fields = ['flight_date', 'task_pilot', 'student', 'flight_course', 'field_transition','fly_nature',
                   'day_night', 'fly_category', 'aircraft', 'aircraft_type', 'departure_airport',
                   'arrival_airport', 'open_time', 'take_off_time', 'landing_time', 'close_time',
                   'flight_duration', 'flight_duration_display', 'flight_sortie', 'left_seat_person',
-                  'right_seat_person', 'remark']
+                  'right_seat_person', 'result', 'ope_base', 'company', 'remark']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # 设置状态字段为单选按钮
-        radio_list = ['field_transition', 'fly_nature', 'day_night', 'fly_category']
+        radio_list = ['field_transition', 'fly_nature', 'day_night', 'fly_category', 'result']
         for item in radio_list:
             choices = getattr(fly_models.FlightRecord, f'{item}_choices', None)
             if choices is not None:
@@ -37,6 +37,22 @@ class FlightRecordForm(BaseModelForm):
         if self.instance and self.instance.flight_duration:
             hours, remainder = divmod(self.instance.flight_duration, 60)
             self.fields['flight_duration_display'].initial = f"{hours:02d}:{remainder:02d}"
+
+        filter_fields = {
+            'task_pilot': fly_models.Employee,
+            'student': fly_models.Person,
+            'flight_course': fly_models.FlightCourse,
+            'aircraft': fly_models.Aircraft,
+            'aircraft_type': fly_models.AircraftType,
+            'departure_airport': fly_models.Airport,
+            'arrival_airport': fly_models.Airport,
+            'ope_base': fly_models.OperatingBase,
+            'company': fly_models.Company,
+        }
+        # 循环设置 queryset
+        for field_name, model in filter_fields.items():
+            if field_name in self.fields:
+                self.fields[field_name].queryset = model.objects.filter(is_deleted=False)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -76,13 +92,19 @@ def flight_record(request):
     task_pilot_query = request.GET.get('searchTaskPilot', '').strip()
     start_date_query = request.GET.get('startDate', '').strip()
     end_date_query = request.GET.get('endDate', '').strip()
+    pilot_student_query = request.GET.get('searchPilotStudent', '').strip()
+    ope_base_query = request.GET.get('searchOpeBase', '').strip()
+
     if key_query:
         data_dict['remark__contains'] = key_query
     if status_query:
         data_dict['fly_category'] = status_query
     if task_pilot_query:
         data_dict['task_pilot'] = task_pilot_query
-
+    if pilot_student_query:
+        data_dict['student'] = pilot_student_query
+    if ope_base_query:
+        data_dict['ope_base'] = ope_base_query
     # 处理日期区间查询
     if start_date_query and end_date_query:
         data_dict['flight_date__range'] = [start_date_query, end_date_query]
@@ -95,11 +117,15 @@ def flight_record(request):
     queryset = fly_models.FlightRecord.objects.filter(**data_dict)
     fly_category_choices = fly_models.FlightCourse.fly_category_choices
     task_pilot_list = fly_models.Employee.objects.filter(is_deleted=False)
+    pilot_student_list = fly_models.Person.objects.filter(is_deleted=False)
+    result_choices = fly_models.FlightRecord.result_choices
+    ope_base_list = fly_models.OperatingBase.objects.filter(is_deleted=False)
     # 应用分页
     page_obj = pagination.Pagination(request, queryset)
     permissions = permission_dict.get_model_permission(fly_models.FlightRecord)
     context = {
         'flight_record_list': page_obj.page_queryset,
+        'full_queryset': queryset,  # 未分页的完整查询集用于合计计算
         'page_string': page_obj.page_html(),
         'key_query': key_query,
         'status_query': status_query,
@@ -108,6 +134,11 @@ def flight_record(request):
         'task_pilot_list': task_pilot_list,
         'start_date_query': start_date_query,
         'end_date_query': end_date_query,
+        'result_choices': result_choices,
+        'pilot_student_query': pilot_student_query,
+        'pilot_student_list': pilot_student_list,
+        'ope_base_query': ope_base_query,
+        'ope_base_list': ope_base_list,
     }
     context.update(permissions)
     return render(request, 'flight_record.html', context)
@@ -127,13 +158,15 @@ def flight_record_add(request):
 
     date_fields = ['flight_date']
     time_fields = ['open_time', 'take_off_time', 'landing_time', 'close_time']
+    select_fields = ['task_pilot', 'student', 'flight_course', 'departure_airport', 'arrival_airport', 'left_seat_person', 'right_seat_person']
 
     context = {
         'form': form,
-        'theme': '课程',
+        'theme': '飞行记录',
         'back_url': 'flight_record',
         'date_fields': date_fields,
         'time_fields': time_fields,
+        'select_fields': select_fields,
     }
 
     return render(request, 'flight_record_form.html', context)
@@ -153,13 +186,15 @@ def flight_record_edit(request, nid):
 
     date_fields = ['flight_date']
     time_fields = ['open_time', 'take_off_time', 'landing_time', 'close_time']
+    select_fields = ['task_pilot', 'student', 'flight_course', 'departure_airport', 'arrival_airport', 'left_seat_person', 'right_seat_person']
 
     context = {
         'form': form,
-        'theme': '课程',
+        'theme': '飞行记录',
         'back_url': 'flight_record',
         'date_fields': date_fields,
         'time_fields': time_fields,
+        'select_fields': select_fields,
     }
 
     return render(request, 'flight_record_form.html', context)
