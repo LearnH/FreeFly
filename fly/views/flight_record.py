@@ -54,6 +54,11 @@ class FlightRecordForm(BaseModelForm):
             if field_name in self.fields:
                 self.fields[field_name].queryset = model.objects.filter(is_deleted=False)
 
+        self.fields['task_pilot'].person_type = 'employee'
+        self.fields['student'].person_type = 'both'
+        self.fields['left_seat_person'].person_type = 'both'
+        self.fields['right_seat_person'].person_type = 'both'
+
     def clean(self):
         cleaned_data = super().clean()
         open_time = cleaned_data.get('open_time')
@@ -114,7 +119,7 @@ def flight_record(request):
         data_dict['flight_date__lte'] = end_date_query
 
     # 构建查询集
-    queryset = fly_models.FlightRecord.objects.filter(**data_dict)
+    queryset = fly_models.FlightRecord.objects.filter(**data_dict).order_by('-flight_date', '-open_time')
     fly_category_choices = fly_models.FlightCourse.fly_category_choices
     task_pilot_list = fly_models.Employee.objects.filter(is_deleted=False)
     pilot_student_list = fly_models.Person.objects.filter(is_deleted=False)
@@ -158,7 +163,8 @@ def flight_record_add(request):
 
     date_fields = ['flight_date']
     time_fields = ['open_time', 'take_off_time', 'landing_time', 'close_time']
-    select_fields = ['task_pilot', 'student', 'flight_course', 'departure_airport', 'arrival_airport', 'left_seat_person', 'right_seat_person']
+    select_fields = ['flight_course', 'departure_airport', 'arrival_airport']
+    person_fields = ['task_pilot', 'student', 'left_seat_person', 'right_seat_person']
 
     context = {
         'form': form,
@@ -167,6 +173,7 @@ def flight_record_add(request):
         'date_fields': date_fields,
         'time_fields': time_fields,
         'select_fields': select_fields,
+        'person_fields': person_fields,
     }
 
     return render(request, 'flight_record_form.html', context)
@@ -186,7 +193,8 @@ def flight_record_edit(request, nid):
 
     date_fields = ['flight_date']
     time_fields = ['open_time', 'take_off_time', 'landing_time', 'close_time']
-    select_fields = ['task_pilot', 'student', 'flight_course', 'departure_airport', 'arrival_airport', 'left_seat_person', 'right_seat_person']
+    select_fields = ['flight_course', 'departure_airport', 'arrival_airport']
+    person_fields = ['task_pilot', 'student', 'left_seat_person', 'right_seat_person']
 
     context = {
         'form': form,
@@ -195,6 +203,7 @@ def flight_record_edit(request, nid):
         'date_fields': date_fields,
         'time_fields': time_fields,
         'select_fields': select_fields,
+        'person_fields': person_fields,
     }
 
     return render(request, 'flight_record_form.html', context)
@@ -251,3 +260,28 @@ def get_course_info(request):
            'success': False,
             'error': '课程不存在',
         })
+
+@login_required
+def get_persons(request):
+    q = request.GET.get('q', '')
+    p_type = request.GET.get('type', 'both')
+
+    queryset = fly_models.Person.objects.filter(is_deleted=False)
+
+    if p_type == 'employee':
+        queryset = queryset.filter(person_type='employee')
+    elif p_type == 'student':
+        queryset = queryset.filter(person_type='student')
+
+    if q:
+        queryset = queryset.filter(name__icontains=q)
+
+    results = list(queryset.values('id', 'name', 'person_type'))[:10]
+
+    data = {
+        "results": [
+            {"id": r['id'], "text": r['name'], "type": r['person_type']} for r in results
+        ]
+    }
+
+    return JsonResponse(data)

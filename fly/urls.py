@@ -74,6 +74,7 @@ urlpatterns = [
     path('flight_record/<int:nid>/delete/', flight_record.flight_record_delete, name='flight_record_delete'),
     path('get_aircraft_type/', flight_record.get_aircraft_type, name='get_aircraft_type'),
     path('get_course_info/', flight_record.get_course_info, name='get_course_info'),
+    path('get_persons/', flight_record.get_persons, name='get_persons'),
 
     # 系统管理
     path('users/', admin.user_list, name='users'),

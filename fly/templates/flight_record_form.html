@@ -179,6 +179,10 @@
                                 </label>
                                 {% if field.name in select_fields %}
                                     {{ field|add_class:"select2-field"|attr:"data-placeholder:请选择或搜索"}}
+                                {% elif field.name in person_fields %}
+                                    {% with "data-type:"|add:field.field.person_type as data_attr %}
+                                        {{ field|add_class:"select2-field-p"|attr:"data-placeholder:请选择或搜索"|attr:data_attr }}
+                                    {% endwith %}
                                 {% else %}
                                     {{ field}}
                                 {% endif %}
@@ -203,13 +207,55 @@
 
 {% block extra_js %}
     <script>
+        function formatPerson(person) {
+            if (!person.id) return person.text;
+            let icon = person.type === 'student' ?
+                '<i class="fas fa-user-graduate me-2" style="color: #3a84ff;"></i>' :
+                '<i class="fa-solid fa-plane-up me-2" style="color: #ff8c3a;"></i>';
+
+            return $('<span>').html(icon + person.text);
+        }
         // 初始化 Select2
         $(document).ready(function () {
-            $('.select2-field').select2({
-                placeholder: '选择或搜索',
-                allowClear: true,
-                width: '100%',
+            $('.select2-field-p').each(function(){
+                var $select = $(this);
+                var personType = $select.attr('data-type');
+
+                $select.select2({
+                    ajax: {
+                        url: '{% url "get_persons" %}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                q: params.term,
+                                type: personType
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data.results
+                            };
+                        }
+                    },
+                    placeholder: $select.attr('data-placeholder') || '请选择或搜索',
+                    allowClear: true,
+                    width: '100%',
+                    templateResult: formatPerson,
+                    escapeMarkup: function(markup) { // 防止XSS攻击
+                        return markup;
+                    }
+                })
+
             });
+            $('.select2-field').select2({
+                width: '100%',
+                placeholder: '请选择或搜索',
+                allowClear: true,
+                escapeMarkup: function(markup) { // 防止XSS攻击
+                    return markup;
+                }
+            })
         });
         document.addEventListener('DOMContentLoaded', function () {
             // 初始化日期选择器
@@ -446,6 +492,7 @@
         /* 优化Select2样式 */
         .select2-container .select2-selection--single {
             height: 35px!important;
+            font-size: 15px!important;
         }
     </style>
 {% endblock %}

@@ -135,7 +135,7 @@
 
         /* 修改下拉箭头样式 */
         .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 28px; /* 确保与选择器的高度一致 */
+            height: 31px; /* 确保与选择器的高度一致 */
          }
         /* 修改选项项的样式 */
         .select2-container--default .select2-results__option {
@@ -167,7 +167,7 @@
 
         /* 选项项 */
         .select2-container--default .select2-results__option {
-            padding: 5px 5px;
+            padding: 5px 12px;
             font-size: 14px;
             color: #424242;
             transition: all 0.2s ease;
@@ -176,10 +176,11 @@
 
         .select2-container--default .select2-results__option:last-child {
             border-bottom: none;
+            margin-bottom: 2px;
         }
 
         .select2-container--default .select2-results__option--highlighted {
-            background-color: #e3f2fd;
+            background: linear-gradient(135deg, #e1f0ff 0%, #d1e6ff 100%);
             color: #1565c0;
         }
 
@@ -192,6 +193,20 @@
         .select2-container--default .select2-selection--single .select2-selection__rendered {
             color: #424242;
             line-height: 2;
+        }
+
+        /* 强制关闭图标靠右，并避免被挤压 */
+        .select2-selection__clear {
+            position: absolute !important;
+            right: 0 !important;  /* 留出空间避免与下拉箭头重叠 */
+            left: auto !important;
+            margin-left: 0 !important;
+            font-size: 16px !important;  /* 确保图标可见 */
+        }
+
+        /* 确保选中文本不会与关闭图标重叠 */
+        .select2-selection--single .select2-selection__rendered {
+            padding-right: 5px !important;  /* 为关闭图标预留空间 */
         }
 
         /* 颜色 */

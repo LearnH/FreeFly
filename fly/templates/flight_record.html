@@ -175,8 +175,8 @@
                 if (!person.id) return person.text;
 
                 let icon = person.element.dataset.type === 'student' ?
-                    '<i class="fas fa-user-graduate text-primary-emphasis me-2"></i>' :
-                    '<i class="fas fa-user-tie text-warning-emphasis me-2"></i>';
+                    '<i class="fas fa-user-graduate me-2" style="color: #3a84ff;"></i>' :
+                    '<i class="fa-solid fa-plane-up  me-2" style="color: #ff8c3a;"></i>';
 
                 return $('<span>').html(icon + person.text);
             }
@@ -189,7 +189,7 @@
                     return $(this).data('placeholder');
                 },
                 templateResult: formatPerson,
-                escapeMarkup: function(markup) {
+                escapeMarkup: function(markup) { // 防止XSS攻击
                     return markup;
                 }
             });
@@ -244,6 +244,16 @@
                 $('#startDate').val('');
                 $('#endDate').val('');
             });
+
+            // 设置默认值：如果当前没有值，则设为本月
+            {#if (!$('#startDate').val() && !$('#endDate').val()) {#}
+            {#    var startOfMonth = moment().startOf('month');#}
+            {#    var endOfMonth = moment().endOf('month');#}
+            {##}
+            {#    $('#dateRangePicker').val(startOfMonth.format('YYYY-MM-DD') + ' - ' + endOfMonth.format('YYYY-MM-DD'));#}
+            {#    $('#startDate').val(startOfMonth.format('YYYY-MM-DD'));#}
+            {#    $('#endDate').val(endOfMonth.format('YYYY-MM-DD'));#}
+            {# }#}
 
             // 计算飞行时长合计
             function calculateTotalDuration() {
